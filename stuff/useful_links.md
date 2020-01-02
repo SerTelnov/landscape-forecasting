@@ -19,6 +19,7 @@
 
   - [Recurrent Neural Networks](https://medium.com/explore-artificial-intelligence/an-introduction-to-recurrent-neural-networks-72c97bf0912)
   - https://towardsdatascience.com/illustrated-guide-to-recurrent-neural-networks-79e5eb8049c9
+  - https://towardsdatascience.com/illustrated-guide-to-lstms-and-gru-s-a-step-by-step-explanation-44e9eb85bf21
   - [LSTMs](https://skymind.ai/wiki/lstm)
 
 - Censored Data
