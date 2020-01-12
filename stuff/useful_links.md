@@ -6,6 +6,15 @@
 
 - https://web.stanford.edu/~jdlevin/Econ%20286/Auctions.pdf
 
+- [KM](http://apex.sjtu.edu.cn/public/files/members/20160929/functional-bid-lands.pdf) Решение RTB спомощью Decision Tree
+
+
+## Статьи по оптимизации bid 
+- http://wnzhang.net/papers/ortb-kdd.pdf
+- http://www0.cs.ucl.ac.uk/staff/w.zhang/rtb-papers/linkedin-pacing.pdf
+- https://arxiv.org/pdf/1506.03837.pdf
+- https://arxiv.org/pdf/1210.4847.pdf
+
 ## Полезное по теории вероятности и мат стату
 
 - В чем разница между probability и likelihood
