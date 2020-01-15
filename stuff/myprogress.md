@@ -54,8 +54,11 @@ bidding logs ((?) - это же информация о пройденном а�
 Используя задачу K-Means clustering строят деревья
 TODO К чему пришли в конце и как получили распределения
 
-### [DeepHit](https://aaai.org/ocs/index.php/AAAI/AAAI18/paper/view/16160/15945) is a deep neural network model [14] which predicts the probability of each bidding price from the minimum price to the maximum price
+### [DeepHit](https://aaai.org/ocs/index.php/AAAI/AAAI18/paper/view/16160/15945) is a deep neural network model which predicts the probability of each bidding price from the minimum price to the maximum price
 
+Статья никак не связана со ставками и рекламой. Но решают аналогичную задачу. Используют глубокое обучение, но с какими-то более хитрими нейтонками. 
+
+TODO перечитать и дописать
 
 
 ### [DeepSurv](https://arxiv.org/pdf/1606.00931v3.pdf) is a Cox proportional hazard model with deep neural network  for feature extraction upon the sample covariates. The loss function is the negative partial likelihood of the winning and losing outcomes.
