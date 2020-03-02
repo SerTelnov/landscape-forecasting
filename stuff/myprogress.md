@@ -105,7 +105,7 @@ TODO перечитать и дописать
 ### Что сделать тут
 * [X] Выбрать какой-то облачный сервер для запуска модели и разобраться в нем
 * [X] Перевести код (хотя бы DLF) на python3
-* [ ] Запустить с настоящим датасетом
+* [X] Запустить с настоящим датасетом
 * [ ] Решить самому какую-то простую задачу с LSTM с использованием tensorflow и запушить на aws
 
 Посмотрел на модный google colab. Для нашей задачи наверно не очень подходит, потому что у нас достаточно большой датасет (8.9 Гб) плюс он скорее всего будет не один.
@@ -113,4 +113,42 @@ TODO перечитать и дописать
 Поднял сервер на AWS, потыкал что там есть, загрузил код
 
 Надоело разбираться с приколами aws, текущая проблема была с python2, tensorflow и все другое работает с python3. В любом случае надо бы перевести на третий питон, а то стыд какой-то
+
+Забил я его запускать на aws, мб потом разберусь. Как я понимаю что залить датасет на облако и из него брать данные, либо можно залить на drive и запустить в colab
+
+Но как итог запустить просто на рабочем компьютере..
+
+## 5. Разобраться в моделе DLF
+
+* [ ] Прочитать статья про embedding, one-hot и тд
+* [X] Основная цель - нарисовать граф нейронки 
+
+Прочитал статьи про embedding
+Статьи: 
+* https://www.tensorflow.org/tutorials/text/word_embeddings
+* https://towardsdatascience.com/neural-network-embeddings-explained-4d028e6f0526
+* https://towardsdatascience.com/how-to-create-word-embedding-in-tensorflow-ed0a61507dd0
+* https://stackoverflow.com/questions/34870614/what-does-tf-nn-embedding-lookup-function-do
+
+Надо посидеть и ручками по коду нарисовать модель, расписать каждую переменную, а то иначе страшно...
+
+[tf lstm num_units](https://wszhan.github.io/2018/04/10/num_units_in_tf_lstm_rnn.html)
+[еще lstm](https://jasdeep06.github.io/posts/Understanding-LSTM-in-Tensorflow-MNIST/)
+
+Что надо будет спросить
+- Норм ли понял чет как.
+- Спросить про про обучение в этой модели
+- И про то что делать
+- Норм ли протратить неделю чтобы переписать их код
+
+## 6. Прочитать про Attention в RNN и Variational Autoencoders
+
+Прочитать:
+
+- http://kvfrans.com/variational-autoencoders-explained/
+- https://www.youtube.com/watch?v=9zKuYvjFFS8
+
+- https://pathmind.com/wiki/word2vec
+- https://pathmind.com/wiki/attention-mechanism-memory-network
+- https://towardsdatascience.com/an-introduction-to-attention-transformers-and-bert-part-1-da0e838c7cda
 

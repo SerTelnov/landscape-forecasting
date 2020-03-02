@@ -25,6 +25,7 @@
 - [Статья](https://towardsdatascience.com/deep-learning-for-survival-analysis-fdd1505293c9) где просто описывается Deep Learning for Survival Analysis
 
 - Deep Learning
+  - http://www.deeplearningbook.org
 
   - [Recurrent Neural Networks](https://medium.com/explore-artificial-intelligence/an-introduction-to-recurrent-neural-networks-72c97bf0912)
   - https://towardsdatascience.com/illustrated-guide-to-recurrent-neural-networks-79e5eb8049c9
