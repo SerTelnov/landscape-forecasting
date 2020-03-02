@@ -135,6 +135,9 @@ TODO перечитать и дописать
 [tf lstm num_units](https://wszhan.github.io/2018/04/10/num_units_in_tf_lstm_rnn.html)
 [еще lstm](https://jasdeep06.github.io/posts/Understanding-LSTM-in-Tensorflow-MNIST/)
 
+[Как понял модель](https://user-images.githubusercontent.com/21954909/75664741-05257200-5c84-11ea-84ba-cf1ffd9b6460.JPG)
+
+
 Что надо будет спросить
 - Норм ли понял чет как.
 - Спросить про про обучение в этой модели
