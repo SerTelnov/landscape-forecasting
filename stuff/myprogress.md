@@ -155,3 +155,24 @@ TODO перечитать и дописать
 - https://pathmind.com/wiki/attention-mechanism-memory-network
 - https://towardsdatascience.com/an-introduction-to-attention-transformers-and-bert-part-1-da0e838c7cda
 
+## 7. Пишу свою модель
+
+### Что сделать тут
+* [X] Почитал документацию tensorflow, чтобы примерно понять как с ним работать.
+* [ ] Написать свою модель 
+    (план капкан - копировать куски кода из модели стати и рефакторить с использованием нормальных подходов)
+* [ ] Подумать как можно быстро это тестировать
+
+Параллельно буду писать свои идеи что плохо и можно улучшить
+
+Первое что заметил это у tf немного странные embedding, не обычный какой-нибудь word2vec, а one-hot, который обучается 
+dence слоем (?). Об этом [статья](https://data-flair.training/blogs/embedding-in-tensorflow/)
+И нигде нет регуляризации
+
+[Описание датасета](http://contest.ipinyou.com/ipinyou-dataset.pdf)
+как с ним работали авторы статьи https://github.com/wnzhang/make-ipinyou-data, описание Benchmarking датасета https://arxiv.org/pdf/1407.7073.pdf
+
+Разобрался как они работают с датасетом. [Собрали все фичи в один датасет](https://github.com/rk2900/make-ipinyou-data/blob/master/python/mkyx.py#L14) и переназвали все фичи через номер,
+все номера в featindex.txt. А ето вообще норм?? (?) Больше они к featindex не обращаются, то есть только с ними и работают.
+
+Подумал еще раз, вроде норм, но надо будет спросить.
