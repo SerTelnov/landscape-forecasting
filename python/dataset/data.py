@@ -8,17 +8,16 @@ class DataMode(Enum):
 
 
 _LABELS = ["market_price", "bid", "weekday", "hour", "IP", "region", "city",
-          "adexchange", "domain", "slotid", "slotwidth", "slotheight",
-          "slotvisibility", "slotformat", "creative", "advertiser", "useragent", "slotprice"]
+           "adexchange", "domain", "slotid", "slotwidth", "slotheight",
+           "slotvisibility", "slotformat", "creative", "advertiser", "useragent", "slotprice"]
 
 _SEPARATOR = '\t'
 
 
 def get_dataset(dataset_path):
     df = pd.read_csv(dataset_path, sep=_SEPARATOR)
-    X = df[["market_price", "bid"]].to_numpy()
-    Y = df.drop(["market_price", "bid"], axis=1).to_numpy()
-    return X, Y
+    wins = df.apply(lambda row: 1 if row['bid'] > row['market_price'] else 0, axis=1)
+    return df.to_numpy(), wins.to_numpy()
 
 
 def rebuild_dataset(dataset_path, out_dir, out_name_prefix, rebuild_mode=DataMode.ALL_DATA):
@@ -48,7 +47,6 @@ def _make_out_path(out_dir, out_name_prefix, rebuild_mode):
         DataMode.WIN_ONLY: "win"
     }[rebuild_mode]
     return out_dir + out_name_prefix + '_' + suffix + '.tsv'
-
 
 # rebuild_dataset(
 #     dataset_path='../../data/1458/train.yzbx.txt',
