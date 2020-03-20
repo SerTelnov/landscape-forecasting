@@ -49,8 +49,8 @@ def _make_out_path(out_dir, out_name_prefix, rebuild_mode):
     return out_dir + out_name_prefix + '_' + suffix + '.tsv'
 
 # rebuild_dataset(
-#     dataset_path='../../data/1458/train.yzbx.txt',
-#     out_name_prefix='train',
+#     dataset_path='../../data/1458/test.yzbx.txt',
+#     out_name_prefix='test',
 #     out_dir='../../data/1458/',
-#     rebuild_mode=RebuildMode.WIN_ONLY
+#     rebuild_mode=DataMode.WIN_ONLY
 # )
