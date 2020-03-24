@@ -154,6 +154,7 @@ TODO перечитать и дописать
 - https://pathmind.com/wiki/word2vec
 - https://pathmind.com/wiki/attention-mechanism-memory-network
 - https://towardsdatascience.com/an-introduction-to-attention-transformers-and-bert-part-1-da0e838c7cda
+- https://blog.floydhub.com/attention-mechanism/amp/
 
 ## 7. Пишу свою модель
 
