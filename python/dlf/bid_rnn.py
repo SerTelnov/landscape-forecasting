@@ -5,7 +5,7 @@ class BidRNNLayer(layers.Layer):
 
     def __init__(self, units):
         super(BidRNNLayer, self).__init__()
-        self.rnn = layers.RNN(layers.LSTMCell(units), return_sequences=True)
+        self.rnn = layers.RNN(layers.LSTMCell(units))
         self.dense = layers.Dense(
             units=1,
             activation='softmax',

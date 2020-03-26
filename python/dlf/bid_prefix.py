@@ -13,6 +13,7 @@ class BidPrefix(layers.Layer):
         x = tf.map_fn(self._prod_prefix, elems=inputs)
         return x
 
+    @tf.function
     def _prod_prefix(self, x):
         bid = tf.cast(x[self.seq_len], dtype=tf.int32)
         market_price = tf.cast(x[self.seq_len + 1], dtype=tf.int32)

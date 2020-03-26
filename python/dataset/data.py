@@ -20,6 +20,12 @@ def get_dataset(dataset_path):
     wins = df.apply(lambda row: 1 if row['bid'] > row['market_price'] else 0, axis=1)
     return df.to_numpy(), wins.to_numpy()
 
+# def get_dataset(dataset_path):
+#     df = pd.read_csv(dataset_path, sep=_SEPARATOR)
+#     X = df.drop(["market_price", "bid"], axis=1).to_numpy()
+#     Y = df[["market_price", "bid"]].to_numpy()
+#     return X, Y
+
 
 def rebuild_dataset(dataset_path, out_dir, out_name_prefix, rebuild_mode=DataMode.ALL_DATA):
     out_file_path = _make_out_path(out_dir, out_name_prefix, rebuild_mode)
