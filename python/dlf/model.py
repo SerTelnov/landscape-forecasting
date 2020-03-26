@@ -28,7 +28,7 @@ class DLF(models.Model):
         self.built = True
 
     def call(self, inputs, **kwargs):
-        features, bid_info = tf.split(inputs, [self.features_number, self.bid_info_size], axis=1)
+        bid_info, features = tf.split(inputs, [self.bid_info_size, self.features_number], axis=1)
         x = self.embedding_layer(features)
         x = self.bid_reshape(x)
         x = self.rnn(x)
