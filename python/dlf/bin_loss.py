@@ -1,10 +1,12 @@
 import tensorflow as tf
 
+from python.dlf.model import DLF
+
 _SMALL_VALUE = 1e-20
 _L2_NORM = 0.001
 _GRAD_CLIP = 5.0
-_ALPHA = 0.25
-_BETA = 0.2
+ALPHA = 0.25
+BETA = 0.2
 
 
 @tf.function
@@ -21,34 +23,26 @@ def cross_entropy(target, prediction):
 @tf.function
 def loss1(target, prediction):
     _, rate_last_one, rate_last_two = tf.split(prediction, num_or_size_splits=3, axis=1)
-    return -tf.reduce_sum(tf.math.log(tf.add(rate_last_two - rate_last_one, _SMALL_VALUE)))
-
-
-def common_loss(target, prediction):
-    return cross_entropy(target, prediction) * _ALPHA + \
-           loss1(target, prediction) * _BETA
+    return -tf.reduce_sum(
+        tf.math.log(
+            tf.add(
+                tf.subtract(rate_last_two, rate_last_one),
+                _SMALL_VALUE)
+        )
+    )
 
 
 @tf.function
-def grad(model, prediction, targets, loss_function):
-    with tf.GradientTape() as tape:
-        tape.watch(model.trainable_variables)
-        loss_value = loss_function(targets, prediction)
-        return loss_value, tape.gradient(loss_value, model.trainable_variables)
+def common_loss(target, prediction):
+    return cross_entropy(target, prediction) * ALPHA + \
+           loss1(target, prediction) * BETA
 
 
-def grad_(tape, model, prediction, targets, loss_function):
+def grad_(tape: tf.GradientTape, model: DLF, prediction: object, targets: object, loss_function) -> object:
     loss_value = loss_function(targets, prediction)
     grads = tape.gradient(loss_value, model.trainable_variables)
     grads, _ = tf.clip_by_global_norm(grads, _GRAD_CLIP)
     return loss_value, grads
-    # return loss_value, grads
-
-# @tf.function
-# def grad_loss(model, loss_value):
-#     with tf.GradientTape() as tape:
-#         tape.watch(model.trainable_variables)
-#         return tape.gradient(loss_value, model.trainable_weights)
 
 
 @tf.function
@@ -62,13 +56,3 @@ def grad_cross_entropy(model, prediction, targets):
         # grads, _ = tf.clip_by_global_norm(tf.gradients(cost, model.trainable_variables), _GRAD_CLIP)
         grads = tape.gradient(cost, model.trainable_variables)
         return loss_value, grads
-
-
-# @tf.function
-# def grad_loss1(model, prediction, targets):
-#     # print(model.trainable_variables)
-#     with tf.GradientTape() as tape:
-#         tape.watch(model.trainable_variables)
-#         loss_value = loss1(targets, prediction)
-#         grads = tape.gradient(loss_value, model.trainable_variables)
-#         return loss_value, grads

@@ -1,38 +1,26 @@
 from enum import Enum
-import pandas as pd
-import numpy as np
 
 
 class DataMode(Enum):
     ALL_DATA = 1
     WIN_ONLY = 2
+    LOSS_ONLY = 3
 
 
 _LABELS = ["market_price", "bid", "weekday", "hour", "IP", "region", "city",
            "adexchange", "domain", "slotid", "slotwidth", "slotheight",
            "slotvisibility", "slotformat", "creative", "advertiser", "useragent", "slotprice"]
 
-_SEPARATOR = '\t'
+SEPARATOR = '\t'
 
 
-def get_dataset(dataset_path):
-    df = pd.read_csv(dataset_path, sep=_SEPARATOR)
-    wins = df.apply(lambda row: 1 if row['bid'] > row['market_price'] else 0, axis=1)
-    return df.to_numpy(), wins.to_numpy()
-
-# def get_dataset(dataset_path):
-#     df = pd.read_csv(dataset_path, sep=_SEPARATOR)
-#     X = df.drop(["market_price", "bid"], axis=1).to_numpy()
-#     Y = df[["market_price", "bid"]].to_numpy()
-#     return X, Y
-
-
-def rebuild_dataset(dataset_path, out_dir, out_name_prefix, rebuild_mode=DataMode.ALL_DATA):
+def rebuild_dataset(dataset_path, out_dir, out_name_prefix, add_title=False, rebuild_mode=DataMode.ALL_DATA):
     out_file_path = _make_out_path(out_dir, out_name_prefix, rebuild_mode)
 
     with open(dataset_path, 'r') as input, \
             open(out_file_path, 'w') as output:
-        output.write(_SEPARATOR.join(_LABELS) + '\n')
+        if add_title:
+            output.write(SEPARATOR.join(_LABELS) + '\n')
 
         for line in input:
             sample = line.split(' ')
@@ -45,7 +33,7 @@ def rebuild_dataset(dataset_path, out_dir, out_name_prefix, rebuild_mode=DataMod
             new_sample = [str(market_price), str(bid)] + \
                          list(map(lambda x: x.split(':')[0], sample[3:]))
 
-            output.write(_SEPARATOR.join(new_sample) + '\n')
+            output.write(SEPARATOR.join(new_sample) + '\n')
 
 
 def _make_out_path(out_dir, out_name_prefix, rebuild_mode):
@@ -55,9 +43,9 @@ def _make_out_path(out_dir, out_name_prefix, rebuild_mode):
     }[rebuild_mode]
     return out_dir + out_name_prefix + '_' + suffix + '.tsv'
 
+
 # rebuild_dataset(
-#     dataset_path='../../data/1458/test.yzbx.txt',
+#     dataset_path='../../data/3476/test.yzbx.txt',
 #     out_name_prefix='test',
-#     out_dir='../../data/1458/',
-#     rebuild_mode=DataMode.WIN_ONLY
+#     out_dir='../../data/3476/'
 # )
