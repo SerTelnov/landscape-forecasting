@@ -15,8 +15,8 @@ class BidPrefix(layers.Layer):
 
     @tf.function
     def _prod_prefix(self, x):
-        bid = tf.cast(x[self.seq_len], dtype=tf.int32)
-        market_price = tf.cast(x[self.seq_len + 1], dtype=tf.int32)
+        market_price = tf.cast(x[self.seq_len], dtype=tf.int32)
+        bid = tf.cast(x[self.seq_len + 1], dtype=tf.int32)
 
         survival_rate = tf.reduce_prod(x[0:bid])
         anlp_rate_last_one = tf.reduce_prod(x[0:market_price + 1])

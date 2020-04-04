@@ -9,15 +9,16 @@ ALPHA = 0.25
 BETA = 0.2
 
 
-@tf.function
+# @tf.function
 def cross_entropy(target, prediction):
+    target = list(map(lambda x: [1., 0.] if x == 0 else [0., 1.], target))
     target = tf.cast(target, dtype=tf.float32)
-    final_survival_rate, _, _ = tf.split(prediction, num_or_size_splits=3, axis=1)
-    final_survival_rate = tf.clip_by_value(final_survival_rate, 1e-10, 1.0)
-    final_dead_rate = tf.subtract(tf.constant(1.0, dtype=tf.float32), final_survival_rate)
-    loss_cost = tf.subtract(tf.constant(1.0, dtype=tf.float32), target)
 
-    return -tf.reduce_sum(target * tf.math.log(final_survival_rate) + loss_cost * final_dead_rate)
+    final_survival_rate, _, _ = tf.split(prediction, num_or_size_splits=3, axis=1)
+    final_dead_rate = tf.subtract(tf.constant(1.0, dtype=tf.float32), final_survival_rate)
+
+    predict = tf.transpose(tf.stack([final_survival_rate, final_dead_rate]))
+    return -tf.reduce_sum(target * tf.math.log(tf.clip_by_value(predict, 1e-10, 1.0)))
 
 
 @tf.function
@@ -32,7 +33,7 @@ def loss1(target, prediction):
     )
 
 
-@tf.function
+# @tf.function
 def common_loss(target, prediction):
     return cross_entropy(target, prediction) * ALPHA + \
            loss1(target, prediction) * BETA
