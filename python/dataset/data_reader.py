@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import time
+import math
 
 from python.dataset.dataset_builder import DataMode, SEPARATOR
 
@@ -39,7 +40,7 @@ class SparseData:
         np.random.shuffle(self.indices)
 
     def number_of_chunks(self, batch_size):
-        return self.data // batch_size + (1 if self.data % batch_size == 0 else 0)
+        return math.ceil(self.data / batch_size)
 
     def has_next(self, batch_size):
         return self.batch_pointer + batch_size <= self.size
@@ -48,6 +49,7 @@ class SparseData:
         if self.batch_pointer + batch_size > self.size and is_train:
             self.shuffle_indices()
             self.batch_pointer = 0
+
         indices = self.indices[self.batch_pointer:self.batch_pointer + batch_size]
         batch_data = self.data[indices]
         batch_labels = self.labels[indices]
