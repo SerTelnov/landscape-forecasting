@@ -24,7 +24,8 @@ def run_test_win(model, step, dataset, stat_holder):
         features, targets = dataset.next_win()
         prediction = model(features)
         cross_entropy_value = cross_entropy(targets, prediction)
-        stat_holder.hold(step, cross_entropy_value, targets, prediction, None)
+        loss1_value = loss1(targets, prediction)
+        stat_holder.hold(step, cross_entropy_value, targets, prediction, loss1_value)
 
     stat_holder.flush(step)
     dataset.reshuffle()
@@ -47,7 +48,7 @@ def run_test_all(model, step, dataset, stat_holder):
 
 def run_test(model, step, dataset, stat_holder, stat_holder_wins):
     print('Test started...')
-    run_test_win(model, step, dataset, stat_holder_wins)
+    # run_test_win(model, step, dataset, stat_holder_wins)
     run_test_all(model, step, dataset, stat_holder)
 
 
@@ -85,7 +86,7 @@ def main():
             loss1_value = loss1_value if is_win else None
             stat_holder_train.hold(step, cross_entropy_value, current_target, prediction, loss1_value)
 
-        if 100 <= step < 300:
+        if 200 <= step < 300:
             if step % 100 == 0:
                 run_test(model, step, test_dataset, stat_holder_test, stat_holder_test_win)
         elif 300 <= step < 2000:
