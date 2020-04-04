@@ -8,7 +8,7 @@ from python.dlf.bid_loss import ALPHA, BETA
 
 
 class Logger:
-    _PATH_PREFIX = '../output/'
+    _PATH_PREFIX = 'output/'
     _LABELS = ['campaign', 'category', 'step', 'mean_loss', 'mean_anlp', 'mean_common', 'mean_auc']
 
     def __init__(self, campaign):
