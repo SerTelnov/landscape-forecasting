@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# coding=utf-8
+
 import tensorflow as tf
 import tensorflow.keras.models as models
 

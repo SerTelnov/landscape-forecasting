@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# coding=utf-8
+
 from datetime import datetime
 
 from python.dataset.dataset_builder import SEPARATOR
