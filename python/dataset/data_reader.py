@@ -40,7 +40,7 @@ class SparseData:
         np.random.shuffle(self.indices)
 
     def number_of_chunks(self, batch_size):
-        return math.ceil(self.data / batch_size)
+        return math.ceil(len(self.data) / batch_size)
 
     def has_next(self, batch_size):
         return self.batch_pointer + batch_size <= self.size
