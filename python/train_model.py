@@ -36,11 +36,10 @@ def run_test_all(model, step, dataset, stat_holder):
     for i in range(dataset.loss_chunks_number() // 2):
         if i > 0 and i % 500 == 0:
             print("Iter number #" + str(i))
-        features, targets, is_win = dataset.next_loss()
+        features, targets= dataset.next_loss()
         prediction = model(features)
         cross_entropy_value = cross_entropy(targets, prediction)
-        loss1_value = loss1(targets, prediction) if is_win else None
-        stat_holder.hold(step, cross_entropy_value, targets, prediction, loss1_value)
+        stat_holder.hold(step, cross_entropy_value, targets, prediction, None)
 
     stat_holder.flush(step)
     dataset.reshuffle()
