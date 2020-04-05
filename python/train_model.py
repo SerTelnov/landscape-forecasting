@@ -61,6 +61,9 @@ def main():
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=_LEARNING_RATE, beta_2=_BETA_2)
 
+    # test_dataset = BiSparseData('../data/toy_datasets/3476_losses.tsv', _BATCH_SIZE, is_train=False)
+    # train_dataset = BiSparseData('../data/toy_datasets/3476_losses.tsv', _BATCH_SIZE)
+
     test_dataset = BiSparseData('../data/3476/test_all.tsv', _BATCH_SIZE, is_train=False)
     train_dataset = BiSparseData('../data/3476/train_all.tsv', _BATCH_SIZE)
 
