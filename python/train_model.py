@@ -17,7 +17,7 @@ _BETA_2 = 0.99
 
 def run_test_win(model, step, dataset, stat_holder):
     print("Win data TEST")
-    for i in range(dataset.win_chunks_number() // 4):
+    for i in range(dataset.win_chunks_number() // 2):
         if i > 0 and i % 100 == 0:
             print("Iter number #" + str(i))
 
@@ -33,10 +33,10 @@ def run_test_win(model, step, dataset, stat_holder):
 
 def run_test_all(model, step, dataset, stat_holder):
     print("All data TEST")
-    for i in range(dataset.chunks_number() // 4):
+    for i in range(dataset.loss_chunks_number() // 2):
         if i > 0 and i % 500 == 0:
             print("Iter number #" + str(i))
-        features, targets, is_win = dataset.next()
+        features, targets, is_win = dataset.next_loss()
         prediction = model(features)
         cross_entropy_value = cross_entropy(targets, prediction)
         loss1_value = loss1(targets, prediction) if is_win else None

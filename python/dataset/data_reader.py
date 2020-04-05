@@ -90,12 +90,18 @@ class BiSparseData:
     def next_win(self):
         return self.winData.next(self.batch_size, self.is_train)
 
+    def next_loss(self):
+        return self.loseData.next(self.batch_size, self.is_train)
+
     def chunks_number(self):
         return self.winData.number_of_chunks(self.batch_size) + \
                self.loseData.number_of_chunks(self.batch_size)
 
     def win_chunks_number(self):
         return self.winData.number_of_chunks(self.batch_size)
+
+    def loss_chunks_number(self):
+        return self.loseData.number_of_chunks(self.batch_size)
 
     def reshuffle(self):
         self.winData.reshuffle()
