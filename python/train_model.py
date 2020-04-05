@@ -33,7 +33,7 @@ def run_test_win(model, step, dataset, stat_holder):
 
 
 def run_test_all(model, step, dataset, stat_holder):
-    print("All data TEST")
+    print("Loss data TEST")
     for i in range(dataset.loss_chunks_number() // 2):
         if i > 0 and i % 500 == 0:
             print("Iter number #" + str(i))
@@ -64,8 +64,8 @@ def main():
     # test_dataset = BiSparseData('../data/toy_datasets/3476_all.tsv', _BATCH_SIZE, is_train=False)
     # train_dataset = BiSparseData('../data/toy_datasets/3476_all.tsv', _BATCH_SIZE)
 
-    test_dataset = BiSparseData('../data/3476/test_all.tsv', _BATCH_SIZE, is_train=False)
-    train_dataset = BiSparseData('../data/3476/train_all.tsv', _BATCH_SIZE)
+    test_dataset = BiSparseData('data/3476/test_all.tsv', _BATCH_SIZE, is_train=False)
+    train_dataset = BiSparseData('data/3476/train_all.tsv', _BATCH_SIZE)
 
     model.build(input_shape=(_BATCH_SIZE, 18))
 
