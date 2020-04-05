@@ -17,7 +17,7 @@ _BETA_2 = 0.99
 
 def run_test_win(model, step, dataset, stat_holder):
     print("Win data TEST")
-    for i in range(dataset.win_chunks_number()):
+    for i in range(dataset.win_chunks_number() // 4):
         if i > 0 and i % 100 == 0:
             print("Iter number #" + str(i))
 
@@ -33,8 +33,8 @@ def run_test_win(model, step, dataset, stat_holder):
 
 def run_test_all(model, step, dataset, stat_holder):
     print("All data TEST")
-    for i in range(dataset.chunks_number()):
-        if i > 0 and i % 100 == 0:
+    for i in range(dataset.chunks_number() // 4):
+        if i > 0 and i % 500 == 0:
             print("Iter number #" + str(i))
         features, targets, is_win = dataset.next()
         prediction = model(features)
@@ -48,7 +48,7 @@ def run_test_all(model, step, dataset, stat_holder):
 
 def run_test(model, step, dataset, stat_holder, stat_holder_wins):
     print('Test started...')
-    # run_test_win(model, step, dataset, stat_holder_wins)
+    run_test_win(model, step, dataset, stat_holder_wins)
     run_test_all(model, step, dataset, stat_holder)
 
 
