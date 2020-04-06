@@ -2,7 +2,6 @@
 # coding=utf-8
 
 import tensorflow as tf
-import time
 
 from python.dataset.data_reader import BiSparseData
 from python.dataset.logger import Logger
@@ -69,14 +68,11 @@ def main():
 
     model.build(input_shape=(_BATCH_SIZE, 18))
 
-    start_time = time.time()
     for step in range(_TRAIN_STEP):
         current_features, current_target, is_win = train_dataset.next()
         with tf.GradientTape(persistent=True) as tape:
             tape.watch(model.trainable_variables)
-            print(str(step) + " --- %s seconds ---" % (time.time() - start_time))
             prediction = model(current_features)
-            start_time = time.time()
 
             cross_entropy_value, grads1 = grad_(tape, model, prediction, current_target, cross_entropy)
             optimizer.apply_gradients(zip(grads1, model.trainable_variables))
