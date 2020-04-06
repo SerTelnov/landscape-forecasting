@@ -4,7 +4,7 @@ from python.dataset.data_reader import BiSparseData
 from python.dataset.logger import Logger
 from python.dataset.stat_holder import StatHolder
 from python.dlf.bid_loss import (
-    cross_entropy, loss1, grad_, grad_common_loss, common_loss
+    cross_entropy, loss1, grad_, grad_common_loss
 )
 from python.dlf.model import DLF
 
@@ -24,11 +24,8 @@ def run_test_win(model, step, dataset, stat_holder):
         features, targets = dataset.next_win()
         prediction = model(features)
         cross_entropy_value = cross_entropy(targets, prediction)
-        loss1_value = loss1(targets, prediction)
+        loss1_value = loss1(prediction)
         stat_holder.hold(step, cross_entropy_value, targets, prediction, loss1_value)
-
-    stat_holder.flush(step)
-    dataset.reshuffle()
 
 
 def run_test_all(model, step, dataset, stat_holder):
@@ -41,14 +38,14 @@ def run_test_all(model, step, dataset, stat_holder):
         cross_entropy_value = cross_entropy(targets, prediction)
         stat_holder.hold(step, cross_entropy_value, targets, prediction, None)
 
+
+def run_test(model, step, dataset, stat_holder):
+    print('Test started...')
+    run_test_win(model, step, dataset, stat_holder)
+    run_test_all(model, step, dataset, stat_holder)
+
     stat_holder.flush(step)
     dataset.reshuffle()
-
-
-def run_test(model, step, dataset, stat_holder, stat_holder_wins):
-    print('Test started...')
-    run_test_win(model, step, dataset, stat_holder_wins)
-    run_test_all(model, step, dataset, stat_holder)
 
 
 def main():
@@ -57,7 +54,6 @@ def main():
 
     stat_holder_train = StatHolder('TRAIN', logger)
     stat_holder_test = StatHolder('TEST', logger, is_train=False)
-    stat_holder_test_win = StatHolder('TEST_WIN', logger, is_train=False)
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=_LEARNING_RATE, beta_2=_BETA_2)
 
@@ -88,27 +84,20 @@ def main():
             loss1_value = loss1_value if is_win else None
             stat_holder_train.hold(step, cross_entropy_value, current_target, prediction, loss1_value)
 
-        if 200 <= step < 300:
+        if 300 <= step < 500:
             if step % 100 == 0:
-                run_test(model, step, test_dataset, stat_holder_test, stat_holder_test_win)
-        elif 300 <= step < 2000:
+                run_test(model, step, test_dataset, stat_holder_test)
+        elif 500 <= step < 2000:
             if step % 500 == 0:
-                run_test(model, step, test_dataset, stat_holder_test, stat_holder_test_win)
+                run_test(model, step, test_dataset, stat_holder_test)
         elif 2000 <= step < 10000:
             if step % 2000 == 0:
-                run_test(model, step, test_dataset, stat_holder_test, stat_holder_test_win)
+                run_test(model, step, test_dataset, stat_holder_test)
         elif 21000 < step:
             if step % 3000 == 0:
-                run_test(model, step, test_dataset, stat_holder_test, stat_holder_test_win)
+                run_test(model, step, test_dataset, stat_holder_test)
 
-    run_test(model, _TRAIN_STEP, test_dataset, stat_holder_test, stat_holder_test_win)
-
-    # X, Y = train_dataset.get_all_data()
-    # model.compile(optimizer=optimizer, loss=common_loss)
-    # model.fit(x=X, y=Y, batch_size=_BATCH_SIZE, epochs=2)
-    # X_, Y_ = test_dataset.get_all_data()
-    # model.test_on_batch(x=X_, y=Y_)
-    # print(model.summary())
+    run_test(model, _TRAIN_STEP, test_dataset, stat_holder_test)
 
 
 if __name__ == '__main__':

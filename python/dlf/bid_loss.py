@@ -14,20 +14,18 @@ def cross_entropy(target, prediction):
     target = tf.cast(target, dtype=tf.float32)
 
     final_survival_rate = prediction[0]
-    samples, _ = prediction[0].shape
     final_dead_rate = tf.subtract(tf.constant(1.0, dtype=tf.float32), final_survival_rate)
 
     predict = tf.transpose(tf.stack([final_survival_rate, final_dead_rate]))
-    return -tf.reduce_sum(target * tf.math.log(tf.clip_by_value(predict, 1e-10, 1.0))) / samples
+    return -tf.reduce_mean(target * tf.math.log(tf.clip_by_value(predict, 1e-10, 1.0)))
 
 
 @tf.function
 def loss1(target, prediction):
     rate_last_one = prediction[1]
     rate_last_two = prediction[2]
-    samples, _ = prediction[1].shape
 
-    return -tf.reduce_sum(
+    return -tf.reduce_mean(
         tf.subtract(
             tf.math.log(
                 tf.add(
@@ -42,13 +40,12 @@ def loss1(target, prediction):
                 )
             )
         )
-    ) / samples
+    )
 
 
 @tf.function
-def common_loss(target, prediction):
-    return cross_entropy(target, prediction) * ALPHA + \
-           loss1(target, prediction) * BETA
+def common_loss(l1, l2):
+    return l1 * BETA + l2 * ALPHA
 
 
 def grad_(tape: tf.GradientTape, model: DLF, prediction: object, targets: object, loss_function) -> object:
