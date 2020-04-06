@@ -31,10 +31,10 @@ def loss1(target, prediction):
     return -tf.reduce_mean(
         tf.subtract(
             tf.math.log(
-                tf.clip_by_value(rate_last_one, _SMALL_VALUE, 1)
+                tf.clip_by_value(rate_last_two, _SMALL_VALUE, 1)
             ),
             tf.math.log(
-                tf.clip_by_value(rate_last_two, _SMALL_VALUE, 1)
+                tf.clip_by_value(rate_last_one, _SMALL_VALUE, 1)
             )
         )
     )
