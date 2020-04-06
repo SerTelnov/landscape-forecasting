@@ -25,7 +25,7 @@ def run_test_win(model, step, dataset, stat_holder):
         features, targets = dataset.next_win()
         prediction = model(features)
         cross_entropy_value = cross_entropy(targets, prediction)
-        loss1_value = loss1(prediction)
+        loss1_value = loss1(targets, prediction)
         stat_holder.hold(step, cross_entropy_value, targets, prediction, loss1_value)
 
 

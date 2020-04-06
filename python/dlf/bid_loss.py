@@ -20,7 +20,7 @@ def cross_entropy(target, prediction):
     return -tf.reduce_mean(target * tf.math.log(tf.clip_by_value(predict, 1e-10, 1.0)))
 
 
-@tf.function
+# @tf.function
 def loss1(target, prediction):
     rate_last_one = prediction[1]
     rate_last_two = prediction[2]
@@ -28,16 +28,10 @@ def loss1(target, prediction):
     return -tf.reduce_mean(
         tf.subtract(
             tf.math.log(
-                tf.add(
-                    rate_last_one,
-                    _SMALL_VALUE
-                )
+                tf.clip_by_value(rate_last_one, _SMALL_VALUE, 1)
             ),
             tf.math.log(
-                tf.add(
-                    rate_last_two,
-                    _SMALL_VALUE
-                )
+                tf.clip_by_value(rate_last_two, _SMALL_VALUE, 1)
             )
         )
     )
@@ -62,7 +56,6 @@ def _grad_(tape, loss_value, train_vars):
     grads = tape.gradient(loss_value, train_vars)
     grads, _ = tf.clip_by_global_norm(grads, _GRAD_CLIP)
     return loss_value, grads
-
 
 # @tf.function
 # def grad_cross_entropy(model, prediction, targets):
