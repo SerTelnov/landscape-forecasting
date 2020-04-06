@@ -19,10 +19,10 @@ class SparseData:
                 if bid_price <= market_price:
                     if data_mode != DataMode.WIN_ONLY:
                         self.data.append(features)
-                        self.labels.append(0.)
+                        self.labels.append([0., 1.])
                 elif data_mode != DataMode.LOSS_ONLY:
                     self.data.append(features)
-                    self.labels.append(1.)
+                    self.labels.append([1., 0.])
 
         self.size = len(self.data)
         print("data size ", self.size, "\n")
@@ -81,11 +81,14 @@ class BiSparseData:
             elif not has_loss:
                 win = True
 
-        # win = True
+        win = True
         # win = False
         current_data_type = self.winData if win else self.loseData
         features, targets = current_data_type.next(self.batch_size, self.is_train)
         return features, targets, win
+
+    def get_all_data(self):
+        return self.winData.data, self.winData.labels
 
     def next_win(self):
         return self.winData.next(self.batch_size, self.is_train)

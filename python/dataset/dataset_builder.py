@@ -77,7 +77,7 @@ def _make_out_path(out_dir, out_name_prefix, rebuild_mode):
 
 # build_toy_dataset(
 #     dataset_path='../../data/3476/test_all.tsv',
-#     dataset_name='3476_losses.tsv',
+#     dataset_name='3476_all.tsv',
 #     size=2048,
-#     data_mode=DataMode.LOSS_ONLY
+#     data_mode=DataMode.ALL_DATA
 # )

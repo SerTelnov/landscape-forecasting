@@ -11,6 +11,7 @@ class BidPrefix(layers.Layer):
 
     def call(self, inputs, **kwargs):
         x = tf.map_fn(self._prod_prefix, elems=inputs)
+        x = tf.split(x, num_or_size_splits=3, axis=1)
         return x
 
     @tf.function
@@ -19,7 +20,7 @@ class BidPrefix(layers.Layer):
         bid = tf.cast(x[self.seq_len + 1], dtype=tf.int32)
 
         survival_rate = tf.reduce_prod(x[0:bid])
-        anlp_rate_last_one = tf.reduce_prod(x[0:market_price + 1])
-        anlp_rate_last_two = tf.reduce_prod(x[0:market_price])
+        rate_last_one = tf.reduce_prod(x[0:market_price + 1])
+        rate_last_two = tf.reduce_prod(x[0:market_price])
 
-        return tf.stack([survival_rate, anlp_rate_last_one, anlp_rate_last_two])
+        return tf.stack([survival_rate, rate_last_one, rate_last_two])

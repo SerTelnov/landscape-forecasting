@@ -1,12 +1,12 @@
 import tensorflow as tf
 
 from python.dataset.data_reader import BiSparseData
+from python.dataset.logger import Logger
+from python.dataset.stat_holder import StatHolder
 from python.dlf.bid_loss import (
-    cross_entropy, loss1, common_loss, grad_
+    cross_entropy, loss1, grad_, grad_common_loss, common_loss
 )
 from python.dlf.model import DLF
-from python.dataset.stat_holder import StatHolder
-from python.dataset.logger import Logger
 
 _TRAIN_STEP = 21000
 _BATCH_SIZE = 128
@@ -36,7 +36,7 @@ def run_test_all(model, step, dataset, stat_holder):
     for i in range(dataset.loss_chunks_number() // 2):
         if i > 0 and i % 500 == 0:
             print("Iter number #" + str(i))
-        features, targets= dataset.next_loss()
+        features, targets = dataset.next_loss()
         prediction = model(features)
         cross_entropy_value = cross_entropy(targets, prediction)
         stat_holder.hold(step, cross_entropy_value, targets, prediction, None)
@@ -61,8 +61,8 @@ def main():
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=_LEARNING_RATE, beta_2=_BETA_2)
 
-    # test_dataset = BiSparseData('../data/toy_datasets/3476_losses.tsv', _BATCH_SIZE, is_train=False)
-    # train_dataset = BiSparseData('../data/toy_datasets/3476_losses.tsv', _BATCH_SIZE)
+    # test_dataset = BiSparseData('../data/toy_datasets/3476_all.tsv', _BATCH_SIZE, is_train=False)
+    # train_dataset = BiSparseData('../data/toy_datasets/3476_all.tsv', _BATCH_SIZE)
 
     test_dataset = BiSparseData('../data/3476/test_all.tsv', _BATCH_SIZE, is_train=False)
     train_dataset = BiSparseData('../data/3476/train_all.tsv', _BATCH_SIZE)
@@ -82,7 +82,7 @@ def main():
                 loss1_value, grads2 = grad_(tape, model, prediction, current_target, loss1)
                 optimizer.apply_gradients(zip(grads2, model.trainable_variables))
 
-                loss_common, grads3 = grad_(tape, model, prediction, current_target, common_loss)
+                loss_common, grads3 = grad_common_loss(tape, model, cross_entropy_value, loss1_value)
                 optimizer.apply_gradients(zip(grads3, model.trainable_variables))
 
             loss1_value = loss1_value if is_win else None
@@ -102,6 +102,13 @@ def main():
                 run_test(model, step, test_dataset, stat_holder_test, stat_holder_test_win)
 
     run_test(model, _TRAIN_STEP, test_dataset, stat_holder_test, stat_holder_test_win)
+
+    # X, Y = train_dataset.get_all_data()
+    # model.compile(optimizer=optimizer, loss=common_loss)
+    # model.fit(x=X, y=Y, batch_size=_BATCH_SIZE, epochs=2)
+    # X_, Y_ = test_dataset.get_all_data()
+    # model.test_on_batch(x=X_, y=Y_)
+    # print(model.summary())
 
 
 if __name__ == '__main__':
