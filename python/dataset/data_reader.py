@@ -81,7 +81,7 @@ class BiSparseData:
             elif not has_loss:
                 win = True
 
-        win = True
+        # win = True
         # win = False
         current_data_type = self.winData if win else self.loseData
         features, targets = current_data_type.next(self.batch_size, self.is_train)

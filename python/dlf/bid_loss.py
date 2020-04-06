@@ -54,7 +54,7 @@ def grad_(tape: tf.GradientTape, model: DLF, prediction: object, targets: object
 
 
 def grad_common_loss(tape: tf.GradientTape, model: DLF, cross_entropy_value, loss1_value) -> object:
-    loss_value = common_loss(cross_entropy_value, loss1_value)
+    loss_value = common_loss(loss1_value, cross_entropy_value)
     return _grad_(tape, loss_value, model.trainable_variables)
 
 
