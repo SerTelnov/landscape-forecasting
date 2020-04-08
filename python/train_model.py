@@ -33,7 +33,7 @@ def run_test_win(model, step, dataset, stat_holder):
         stat_holder.hold(step, cross_entropy_value, targets, prediction, loss1_value)
 
 
-def run_test_all(model, step, dataset, stat_holder):
+def run_test_loss(model, step, dataset, stat_holder):
     print("Loss data TEST")
     for i in range(_TEST_STEP):
         if i > 0 and i % 100 == 0:
@@ -47,7 +47,7 @@ def run_test_all(model, step, dataset, stat_holder):
 def run_test(model, step, dataset, stat_holder):
     print('Test started...')
     run_test_win(model, step, dataset, stat_holder)
-    run_test_all(model, step, dataset, stat_holder)
+    run_test_loss(model, step, dataset, stat_holder)
 
     stat_holder.flush(step)
     dataset.reshuffle()
