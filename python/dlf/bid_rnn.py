@@ -22,7 +22,6 @@ class BidRNNLayer(layers.Layer):
 
     def call(self, inputs, **kwargs):
         x = self.rnn(inputs)
-        x = self.softmax(x)
         x = self.dense(x)
         x = self.reshape(x)
         x = tf.keras.activations.sigmoid(x)
