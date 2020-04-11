@@ -72,7 +72,7 @@ def main():
 
     start_time = time.time()
     steps = train_dataset.epoch_steps(2)
-    for step in range(steps):
+    for step in range(101):
         current_features, current_target, is_win = train_dataset.next()
         with tf.GradientTape(persistent=True) as tape:
             tape.watch(model.trainable_variables)
@@ -92,6 +92,9 @@ def main():
 
             loss1_value = loss1_value if is_win else None
             stat_holder_train.hold(step, cross_entropy_value, current_target, prediction, loss1_value)
+
+        if step > 0 and step % 10 == 0:
+            stat_holder_train.flush(step)
 
         if 300 <= step < 500:
             if step % 100 == 0:

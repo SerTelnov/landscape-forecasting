@@ -48,6 +48,6 @@ class StatHolder:
 
     @staticmethod
     def _roc_score(y_true, y_pred):
-        if np.unique(y_true) > 1:
+        if len(np.unique(y_true)) > 1:
             return roc_auc_score(y_true, y_pred)
         return 0.0001

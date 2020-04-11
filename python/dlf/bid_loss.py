@@ -29,17 +29,17 @@ def loss1(target, prediction):
     rate_last_two = prediction[2]
 
     return -tf.reduce_mean(
-        tf.subtract(
-            tf.math.log(rate_last_two),
-            tf.math.log(rate_last_one)
+        tf.math.log(
+            tf.add(
+                rate_last_two - rate_last_one,
+                _SMALL_VALUE
+            )
         )
     )
     # return -tf.reduce_mean(
-    #     tf.math.log(
-    #         tf.add(
-    #             tf.abs(rate_last_two - rate_last_one),
-    #             _SMALL_VALUE
-    #         )
+    #     tf.subtract(
+    #         tf.math.log(rate_last_two),
+    #         tf.math.log(rate_last_one)
     #     )
     # )
 

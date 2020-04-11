@@ -89,21 +89,23 @@ def rebuild_dataset(dataset_path, out_dir, out_name_prefix, add_title=False, reb
 def _make_out_path(out_dir, out_name_prefix, rebuild_mode):
     suffix = {
         DataMode.ALL_DATA: "all",
-        DataMode.WIN_ONLY: "win"
+        DataMode.WIN_ONLY: "win",
+        DataMode.LOSS_ONLY: "lose"
     }[rebuild_mode]
     return out_dir + out_name_prefix + '_' + suffix + '.tsv'
 
 
 # decrease_dataset(
 #     dataset_path='../../data/3476/',
-#     dataset_name='train_all.tsv'
+#     dataset_name='test.yzbx.txt',
+#     decrease_value=10
 # )
 
-# rebuild_dataset(
-#     dataset_path='../../data/3476/test.yzbx.txt',
-#     out_name_prefix='test',
-#     out_dir='../../data/3476/'
-# )
+rebuild_dataset(
+    dataset_path='../../data/3476/low_train.yzbx.txt',
+    out_name_prefix='train',
+    out_dir='../../data/3476/'
+)
 
 
 # build_toy_dataset(
