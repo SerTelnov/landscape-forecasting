@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+import numpy as np
+import random
 from enum import Enum
 
 
@@ -42,6 +44,26 @@ def build_toy_dataset(dataset_path, dataset_name, size, data_mode=DataMode.ALL_D
                     count += 1
 
 
+def decrease_dataset(dataset_path, dataset_name, decrease_value=100):
+    in_file_path = dataset_path + dataset_name
+    out_file_path = dataset_path + 'low_' + dataset_name
+
+    number_of_lines = sum(1 for _ in open(in_file_path, 'r'))
+    new_number_of_lines = number_of_lines // decrease_value
+
+    with open(in_file_path, 'r') as input, \
+            open(out_file_path, 'w') as output:
+        indices = np.arange(number_of_lines)
+        random.shuffle(indices)
+        indices = indices[:new_number_of_lines]
+
+        line_number = 0
+        for line in input:
+            if line_number in indices:
+                output.write(line)
+            line_number += 1
+
+
 def rebuild_dataset(dataset_path, out_dir, out_name_prefix, add_title=False, rebuild_mode=DataMode.ALL_DATA):
     out_file_path = _make_out_path(out_dir, out_name_prefix, rebuild_mode)
 
@@ -70,6 +92,12 @@ def _make_out_path(out_dir, out_name_prefix, rebuild_mode):
         DataMode.WIN_ONLY: "win"
     }[rebuild_mode]
     return out_dir + out_name_prefix + '_' + suffix + '.tsv'
+
+
+decrease_dataset(
+    dataset_path='../../data/3476/',
+    dataset_name='train_all.tsv'
+)
 
 # rebuild_dataset(
 #     dataset_path='../../data/3476/test.yzbx.txt',

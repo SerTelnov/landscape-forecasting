@@ -70,6 +70,11 @@ class BiSparseData:
         self.size = self.winData.size + self.loseData.size
         self.is_train = is_train
 
+    def epoch_steps(self, epoch_number):
+        lose_batches = self.loseData.size // self.batch_size
+        win_batches = self.winData.size // self.batch_size
+        return (lose_batches + win_batches) * epoch_number
+
     def next(self):
         win = int(random.random() * 100) % 11 <= 5
 

@@ -62,16 +62,17 @@ def main():
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=_LEARNING_RATE, beta_2=_BETA_2)
 
-    # test_dataset = BiSparseData('../data/toy_datasets/3476_all.tsv', _BATCH_SIZE, is_train=False)
-    # train_dataset = BiSparseData('../data/toy_datasets/3476_all.tsv', _BATCH_SIZE)
+    test_dataset = BiSparseData('../data/toy_datasets/3476_all.tsv', _BATCH_SIZE, is_train=False)
+    train_dataset = BiSparseData('../data/toy_datasets/3476_all.tsv', _BATCH_SIZE)
 
-    test_dataset = BiSparseData('data/3476/test_all.tsv', _BATCH_SIZE, is_train=False)
-    train_dataset = BiSparseData('data/3476/train_all.tsv', _BATCH_SIZE)
+    # test_dataset = BiSparseData('data/3476/test_all.tsv', _BATCH_SIZE, is_train=False)
+    # train_dataset = BiSparseData('data/3476/train_all.tsv', _BATCH_SIZE)
 
     model.build(input_shape=(_BATCH_SIZE, 18))
 
     start_time = 0
-    for step in range(_TRAIN_STEP):
+    steps = train_dataset.epoch_steps(2)
+    for step in steps:
         current_features, current_target, is_win = train_dataset.next()
         with tf.GradientTape(persistent=True) as tape:
             tape.watch(model.trainable_variables)
