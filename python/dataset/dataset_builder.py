@@ -94,10 +94,10 @@ def _make_out_path(out_dir, out_name_prefix, rebuild_mode):
     return out_dir + out_name_prefix + '_' + suffix + '.tsv'
 
 
-decrease_dataset(
-    dataset_path='../../data/3476/',
-    dataset_name='train_all.tsv'
-)
+# decrease_dataset(
+#     dataset_path='../../data/3476/',
+#     dataset_name='train_all.tsv'
+# )
 
 # rebuild_dataset(
 #     dataset_path='../../data/3476/test.yzbx.txt',

@@ -70,9 +70,9 @@ def main():
 
     model.build(input_shape=(_BATCH_SIZE, 18))
 
-    start_time = 0
+    start_time = time.time()
     steps = train_dataset.epoch_steps(2)
-    for step in steps:
+    for step in range(steps):
         current_features, current_target, is_win = train_dataset.next()
         with tf.GradientTape(persistent=True) as tape:
             tape.watch(model.trainable_variables)

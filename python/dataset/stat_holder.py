@@ -2,7 +2,6 @@
 # coding=utf-8
 
 import numpy as np
-import tensorflow as tf
 from sklearn.metrics import roc_auc_score
 
 
@@ -19,8 +18,8 @@ class StatHolder:
 
     def hold(self, step, cross_entropy, targets, prediction, anlp_loss=None):
         self.cross_entropy.append(cross_entropy)
-        self.auc_label.append(targets)
-        self.auc_prob.append(tf.transpose(prediction)[0].numpy())
+        self.auc_label.append(targets.T[0])
+        self.auc_prob.append(prediction[0].numpy())
         if anlp_loss is not None:
             self.anlp_loss.append(anlp_loss)
         self._log(step)
@@ -32,9 +31,11 @@ class StatHolder:
     def flush(self, step):
         mean_anlp = StatHolder._mean_value(self.anlp_loss)
         mean_loss = StatHolder._mean_value(self.cross_entropy)
-        # mean_auc = roc_auc_score(np.reshape(self.auc_label, [1, -1])[0],
-        #                          np.reshape(self.auc_prob, [1, -1])[0])
-        self.logger.log(self.category, step, mean_loss, mean_anlp)
+        mean_auc = StatHolder._roc_score(
+            np.reshape(self.auc_label, [1, -1])[0],
+            np.reshape(self.auc_prob, [1, -1])[0]
+        )
+        self.logger.log(self.category, step, mean_loss, mean_anlp, mean_auc)
 
         self.anlp_loss = []
         self.cross_entropy = []
@@ -44,3 +45,9 @@ class StatHolder:
     @staticmethod
     def _mean_value(values):
         return np.array(values).mean() if len(values) != 0 else None
+
+    @staticmethod
+    def _roc_score(y_true, y_pred):
+        if np.unique(y_true) > 1:
+            return roc_auc_score(y_true, y_pred)
+        return 0.0001

@@ -17,17 +17,18 @@ class Logger:
         self.log_file = Logger._PATH_PREFIX + 'dlf_%s_%s.tsv' % (campaign, timestamp_str)
         self._force_write(SEPARATOR.join(Logger._LABELS))
 
-    def log(self, category, step, mean_loss, mean_anlp):
-        stat = self._stat_str(category, step, mean_loss, mean_anlp)
+    def log(self, category, step, mean_loss, mean_anlp, mean_auc):
+        stat = self._stat_str(category, step, mean_loss, mean_anlp, mean_auc)
         self._force_write(stat)
         print(stat)
 
-    def _stat_str(self, category, step, mean_loss, mean_anlp):
+    def _stat_str(self, category, step, mean_loss, mean_anlp, mean_auc):
         common_loss = ALPHA * mean_loss + BETA * mean_anlp if mean_anlp is not None else None
         log = [str(self.campaign), category, str(step),
                Logger._to_str('{:.6f}', mean_loss),
                Logger._to_str('{:.4f}', mean_anlp),
-               Logger._to_str('{:.4f}', common_loss)]
+               Logger._to_str('{:.4f}', common_loss),
+               Logger._to_str('{:.4f}', mean_auc)]
         return SEPARATOR.join(log)
 
     def _force_write(self, info):
