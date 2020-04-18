@@ -18,7 +18,7 @@ class StatHolder:
 
     def hold(self, step, cross_entropy, targets, prediction, anlp_loss=None):
         self.cross_entropy.append(cross_entropy)
-        self.auc_label.append(targets.T[0])
+        self.auc_label.append(targets)
         self.auc_prob.append(prediction[0].numpy())
         if anlp_loss is not None:
             self.anlp_loss.append(anlp_loss)

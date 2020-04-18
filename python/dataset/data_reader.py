@@ -12,24 +12,32 @@ from python.dataset.dataset_builder import DataMode, SEPARATOR
 class SparseData:
 
     def __init__(self, file_path, data_mode):
-        self.data = []
+        self.features = []
         self.labels = []
+        self.bids = []
+
         with open(file_path, 'r') as fi:
             for line in fi:
                 features = list(map(int, line.split(SEPARATOR)))
-                market_price = int(features[0])
-                bid_price = int(features[1])
+                market_price = features[0]
+                bid_price = features[1]
+                label = None
+
                 if bid_price <= market_price:
                     if data_mode != DataMode.WIN_ONLY:
-                        self.data.append(features)
-                        self.labels.append([0., 1.])
+                        label = 0.
                 elif data_mode != DataMode.LOSS_ONLY:
-                    self.data.append(features)
-                    self.labels.append([1., 0.])
+                    label = 1.
 
-        self.size = len(self.data)
+                if label is not None:
+                    self.features.append(features[2:])
+                    self.bids.append(features[:2])
+                    self.labels.append(label)
+
+        self.size = len(self.features)
         print("data size ", self.size, "\n")
-        self.data = np.array(self.data)
+        self.features = np.array(self.features)
+        self.bids = np.array(self.bids)
         self.labels = np.array(self.labels)
         self.indices = np.arange(self.size)
         self.shuffle_indices()
@@ -43,7 +51,7 @@ class SparseData:
         np.random.shuffle(self.indices)
 
     def number_of_chunks(self, batch_size):
-        return math.floor(len(self.data) / batch_size)
+        return math.floor(len(self.features) / batch_size)
 
     def has_next(self, batch_size):
         return self.batch_pointer + batch_size <= self.size
@@ -54,10 +62,12 @@ class SparseData:
             self.batch_pointer = 0
 
         indices = self.indices[self.batch_pointer:self.batch_pointer + batch_size]
-        batch_data = self.data[indices]
-        batch_labels = self.labels[indices]
         self.batch_pointer += batch_size
-        return np.array(batch_data), np.array(batch_labels)
+
+        batch_features = self.features[indices]
+        batch_bids = self.bids[indices]
+        batch_labels = self.labels[indices]
+        return np.array(batch_features), np.array(batch_bids), np.array(batch_labels)
 
 
 class BiSparseData:
@@ -92,11 +102,11 @@ class BiSparseData:
         # win = True
         # win = False
         current_data_type = self.winData if win else self.loseData
-        features, targets = current_data_type.next(self.batch_size, self.is_train)
-        return features, targets, win
+        features, bids, targets = current_data_type.next(self.batch_size, self.is_train)
+        return features, bids, targets, win
 
     def get_all_data(self):
-        return self.winData.data, self.winData.labels
+        return self.winData.features, self.winData.labels
 
     def next_win(self):
         return self.winData.next(self.batch_size, self.is_train)

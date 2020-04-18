@@ -101,11 +101,12 @@ def _make_out_path(out_dir, out_name_prefix, rebuild_mode):
 #     decrease_value=10
 # )
 
-rebuild_dataset(
-    dataset_path='../../data/3476/low_train.yzbx.txt',
-    out_name_prefix='train',
-    out_dir='../../data/3476/'
-)
+
+# rebuild_dataset(
+#     dataset_path='../../data/3476/low_train.yzbx.txt',
+#     out_name_prefix='train',
+#     out_dir='../../data/3476/'
+# )
 
 
 # build_toy_dataset(

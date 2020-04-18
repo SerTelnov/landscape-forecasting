@@ -7,10 +7,12 @@ import time
 from python.dataset.data_reader import BiSparseData
 from python.dataset.logger import Logger
 from python.dataset.stat_holder import StatHolder
-from python.dlf.bid_loss import (
-    cross_entropy, loss1, grad_, grad_common_loss
+from python.dlf.dlf import DLF
+from python.dataset.dataset_builder import DataMode
+
+from python.dlf.losses import (
+    cross_entropy, loss1, grad_common_loss, loss_grad
 )
-from python.dlf.model import DLF
 
 _TRAIN_STEP = 21000
 _TEST_STEP = 300
@@ -18,6 +20,9 @@ _BATCH_SIZE = 128
 
 _LEARNING_RATE = 1e-3
 _BETA_2 = 0.99
+
+ALPHA = 0.25
+BETA = 0.2
 
 
 def run_test_win(model, step, dataset, stat_holder):
@@ -27,7 +32,7 @@ def run_test_win(model, step, dataset, stat_holder):
             print("Iter number #%s" % i)
 
         features, targets = dataset.next_win()
-        prediction = model(features)
+        prediction = model.predict_on_batch(features)
         cross_entropy_value = cross_entropy(targets, prediction)
         loss1_value = loss1(targets, prediction)
         stat_holder.hold(step, cross_entropy_value, targets, prediction, loss1_value)
@@ -39,7 +44,7 @@ def run_test_loss(model, step, dataset, stat_holder):
         if i > 0 and i % 100 == 0:
             print("Iter number #%s" % i)
         features, targets = dataset.next_loss()
-        prediction = model(features)
+        prediction = model.predict_on_batch(features)
         cross_entropy_value = cross_entropy(targets, prediction)
         stat_holder.hold(step, cross_entropy_value, targets, prediction, None)
 
@@ -53,9 +58,8 @@ def run_test(model, step, dataset, stat_holder):
     dataset.reshuffle()
 
 
-def main():
-    model = DLF()
-    logger = Logger(3476)
+def train():
+    logger = Logger(3476, DataMode.ALL_DATA)
 
     stat_holder_train = StatHolder('TRAIN', logger)
     stat_holder_test = StatHolder('TEST', logger, is_train=False)
@@ -68,30 +72,42 @@ def main():
     # test_dataset = BiSparseData('data/3476/test_all.tsv', _BATCH_SIZE, is_train=False)
     # train_dataset = BiSparseData('data/3476/train_all.tsv', _BATCH_SIZE)
 
-    model.build(input_shape=(_BATCH_SIZE, 18))
+    model = DLF()
+    model.build(input_shape=([_BATCH_SIZE, 16], [_BATCH_SIZE, 2]))
+    # model.compile(
+    #     optimizer,
+    #     loss={'output_1': CrossEntropyLoss(), 'output_2': AnlpLoss()},
+    #     metrics={'output_1': tf.keras.metrics.AUC()},
+    #     loss_weights=[BETA, ALPHA]
+    # )
 
     start_time = time.time()
     steps = train_dataset.epoch_steps(2)
     for step in range(101):
-        current_features, current_target, is_win = train_dataset.next()
-        with tf.GradientTape(persistent=True) as tape:
+        current_features, current_bids, current_target, is_win = train_dataset.next()
+        # loss_out = model.train_on_batch([current_features, current_bids], y=[current_target])
+        # model.fit(
+        #     x=[current_features, current_bids],
+        #     y=[current_target],
+        #     batch_size=128)
+        print("Prev step %s worked %s sec" % (step, '{:.4f}'.format(time.time() - start_time)))
+        start_time = time.time()
+        with tf.GradientTape() as tape:
             tape.watch(model.trainable_variables)
-            print("Prev step %s worked %s sec" % (step, '{:.4f}'.format(time.time() - start_time)))
-            prediction = model(current_features)
-            start_time = time.time()
-
-            cross_entropy_value, grads1 = grad_(tape, model, prediction, current_target, cross_entropy)
-            optimizer.apply_gradients(zip(grads1, model.trainable_variables))
+            survival_rate, rate_last = model.predict_on_batch([current_features, current_bids])
 
             if is_win:
-                loss1_value, grads2 = grad_(tape, model, prediction, current_target, loss1)
-                optimizer.apply_gradients(zip(grads2, model.trainable_variables))
+                loss1_value = loss1(current_target, survival_rate)
+                cross_entropy_value = cross_entropy(current_target, rate_last)
 
-                loss_common, grads3 = grad_common_loss(tape, model, cross_entropy_value, loss1_value)
-                optimizer.apply_gradients(zip(grads3, model.trainable_variables))
+                loss_common, grads = grad_common_loss(tape, model.trainable_variables, loss1_value, cross_entropy_value)
+                optimizer.apply_gradients(zip(grads, model.trainable_variables))
+            else:
+                cross_entropy_value, grads = loss_grad(tape, model.trainable_variables, current_target, survival_rate, cross_entropy)
+                optimizer.apply_gradients(zip(grads, model.trainable_variables))
 
             loss1_value = loss1_value if is_win else None
-            stat_holder_train.hold(step, cross_entropy_value, current_target, prediction, loss1_value)
+            stat_holder_train.hold(step, cross_entropy_value, current_target, [survival_rate, rate_last], loss1_value)
 
         if step > 0 and step % 10 == 0:
             stat_holder_train.flush(step)
@@ -112,5 +128,9 @@ def main():
     run_test(model, _TRAIN_STEP, test_dataset, stat_holder_test)
 
 
+def main():
+    pass
+
+
 if __name__ == '__main__':
-    main()
+    train()
