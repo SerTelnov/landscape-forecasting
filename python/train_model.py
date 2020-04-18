@@ -15,7 +15,7 @@ from python.dlf.losses import (
 )
 
 _TRAIN_STEP = 21000
-_TEST_STEP = 300
+_TEST_STEP = 310
 _BATCH_SIZE = 128
 
 _LEARNING_RATE = 1e-3
@@ -27,26 +27,28 @@ BETA = 0.2
 
 def run_test_win(model, step, dataset, stat_holder):
     print("Win data TEST")
-    for i in range(_TEST_STEP):
+    steps = min(_TEST_STEP, dataset.win_chunks_number())
+    for i in range(steps):
         if i > 0 and i % 100 == 0:
             print("Iter number #%s" % i)
 
-        features, targets = dataset.next_win()
-        prediction = model.predict_on_batch(features)
-        cross_entropy_value = cross_entropy(targets, prediction)
-        loss1_value = loss1(targets, prediction)
-        stat_holder.hold(step, cross_entropy_value, targets, prediction, loss1_value)
+        features, bids, targets = dataset.next_win()
+        survival_rate, rate_last = model.predict_on_batch([features, bids])
+        cross_entropy_value = cross_entropy(targets, survival_rate)
+        loss1_value = loss1(targets, rate_last)
+        stat_holder.hold(step, cross_entropy_value, targets, [survival_rate, rate_last], loss1_value)
 
 
 def run_test_loss(model, step, dataset, stat_holder):
     print("Loss data TEST")
-    for i in range(_TEST_STEP):
+    steps = min(_TEST_STEP, dataset.loss_chunks_number())
+    for i in range(steps):
         if i > 0 and i % 100 == 0:
             print("Iter number #%s" % i)
-        features, targets = dataset.next_loss()
-        prediction = model.predict_on_batch(features)
-        cross_entropy_value = cross_entropy(targets, prediction)
-        stat_holder.hold(step, cross_entropy_value, targets, prediction, None)
+        features, bids, targets = dataset.next_loss()
+        survival_rate, rate_last = model.predict_on_batch([features, bids])
+        cross_entropy_value = cross_entropy(targets, survival_rate)
+        stat_holder.hold(step, cross_entropy_value, targets, [survival_rate, rate_last], None)
 
 
 def run_test(model, step, dataset, stat_holder):
