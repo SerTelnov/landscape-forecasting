@@ -2,9 +2,6 @@
 # coding=utf-8
 
 import tensorflow as tf
-import tensorflow.keras.losses as losses
-
-from python.dlf.dlf import DLF
 
 _SMALL_VALUE = 1e-20
 _L2_NORM = 0.001

@@ -3,14 +3,7 @@
 
 import numpy as np
 import random
-from enum import Enum
-
-
-class DataMode(Enum):
-    ALL_DATA = 1
-    WIN_ONLY = 2
-    LOSS_ONLY = 3
-
+from python.util import DataMode
 
 _LABELS = ["market_price", "bid", "weekday", "hour", "IP", "region", "city",
            "adexchange", "domain", "slotid", "slotwidth", "slotheight",

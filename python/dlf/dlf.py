@@ -5,9 +5,10 @@ import tensorflow as tf
 import tensorflow.keras.models as models
 
 from python.dlf.bid_embedding import BidEmbeddingLayer
+from python.dlf.bid_prefix import BidPrefix
 from python.dlf.bid_reshaper import BidReshape
 from python.dlf.bid_rnn import BidRNNLayer
-from python.dlf.bid_prefix import BidPrefix
+from python.util import LossMode
 
 
 class DLF(models.Model):
@@ -16,8 +17,9 @@ class DLF(models.Model):
     _STATE_SIZE = 128
     _MAX_SEQ_LEN = 310
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, loss_mode=LossMode.ALL_LOSS, *args, **kwargs):
         super(DLF, self).__init__(*args, **kwargs)
+        self.loss_mode = loss_mode
         self.embedding_layer = None
         self.bid_reshape = BidReshape(self._MAX_SEQ_LEN)
         self.rnn = BidRNNLayer(self._STATE_SIZE)
@@ -28,7 +30,7 @@ class DLF(models.Model):
         bid_info_number = input_shape[1][1]
 
         self.embedding_layer = BidEmbeddingLayer(features_number, self._EMBEDDING_DIM)
-        self.bid_prefix = BidPrefix(self._MAX_SEQ_LEN, bid_info_number)
+        self.bid_prefix = BidPrefix(self._MAX_SEQ_LEN, bid_info_number, self.loss_mode)
         self.built = True
 
     def call(self, inputs, **kwargs):

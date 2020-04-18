@@ -12,9 +12,9 @@ class Logger:
     _PATH_PREFIX = '../output/'
     _LABELS = ['campaign', 'category', 'step', 'cross_entropy', 'anlp', 'common_loss', 'mean_auc']
 
-    def __init__(self, campaign, data_mode):
+    def __init__(self, campaign, data_mode, loss_name=''):
         self.campaign = campaign
-        self.log_file = self._get_log_name(campaign, data_mode)
+        self.log_file = self._get_log_name(campaign, data_mode, loss_name)
         self._force_write(SEPARATOR.join(Logger._LABELS))
 
     def log(self, category, step, cross_entropy, mean_anlp, mean_auc):
@@ -40,11 +40,11 @@ class Logger:
         return x_format.format(x) if x is not None else 'NULL'
 
     @staticmethod
-    def _get_log_name(campaign, data_mode):
+    def _get_log_name(campaign, data_mode, loss_name):
         timestamp_str = datetime.strftime(datetime.now(), '%Y%m%d_%H%M')
         data_mode_str = {
             DataMode.ALL_DATA: 'all',
             DataMode.WIN_ONLY: 'win',
             DataMode.LOSS_ONLY: 'loss'
         }[data_mode]
-        return Logger._PATH_PREFIX + 'dlf_%s_%s_%s.tsv' % (campaign, data_mode_str, timestamp_str)
+        return Logger._PATH_PREFIX + 'dlf_%s_%s_%s_%s.tsv' % (campaign, data_mode_str, loss_name, timestamp_str)

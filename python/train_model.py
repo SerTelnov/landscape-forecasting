@@ -8,7 +8,7 @@ from python.dataset.data_reader import BiSparseData
 from python.dataset.logger import Logger
 from python.dataset.stat_holder import StatHolder
 from python.dlf.dlf import DLF
-from python.dataset.dataset_builder import DataMode
+from python.util import LossMode, DataMode
 
 from python.dlf.losses import (
     cross_entropy, loss1, grad_common_loss, loss_grad
@@ -58,40 +58,47 @@ def run_test(model, step, dataset, stat_holder):
     dataset.reshuffle()
 
 
-def train():
-    logger = Logger(3476, DataMode.ALL_DATA)
+def train_cross_entropy_only(campaign):
+    logger = Logger(campaign, DataMode.ALL_DATA, 'cross_entropy')
+
+    model = DLF(LossMode.CROSS_ENTROPY)
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=_LEARNING_RATE, beta_2=_BETA_2),
+        loss=cross_entropy
+    )
+
+    test_dataset = BiSparseData('../data/toy_datasets/%s_all.tsv' % campaign, _BATCH_SIZE, is_train=False)
+    train_dataset = BiSparseData('../data/toy_datasets/%s_all.tsv' % campaign, _BATCH_SIZE)
+
+    for step in range(101):
+        current_features, current_bids, current_target, is_win = train_dataset.next()
+        start_time = time.time()
+        loss_out = model.train_on_batch([current_features, current_bids], y=[current_target])
+        print("Prev step %s worked %s sec" % (step, '{:.4f}'.format(time.time() - start_time)))
+        print(loss_out)
+
+
+def train_all(campaign):
+    logger = Logger(campaign, DataMode.ALL_DATA)
 
     stat_holder_train = StatHolder('TRAIN', logger)
     stat_holder_test = StatHolder('TEST', logger, is_train=False)
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=_LEARNING_RATE, beta_2=_BETA_2)
 
-    test_dataset = BiSparseData('../data/toy_datasets/3476_all.tsv', _BATCH_SIZE, is_train=False)
-    train_dataset = BiSparseData('../data/toy_datasets/3476_all.tsv', _BATCH_SIZE)
+    test_dataset = BiSparseData('../data/toy_datasets/%s_all.tsv' % campaign, _BATCH_SIZE, is_train=False)
+    train_dataset = BiSparseData('../data/toy_datasets/%s_all.tsv' % campaign, _BATCH_SIZE)
 
     # test_dataset = BiSparseData('data/3476/test_all.tsv', _BATCH_SIZE, is_train=False)
     # train_dataset = BiSparseData('data/3476/train_all.tsv', _BATCH_SIZE)
 
     model = DLF()
     model.build(input_shape=([_BATCH_SIZE, 16], [_BATCH_SIZE, 2]))
-    # model.compile(
-    #     optimizer,
-    #     loss={'output_1': CrossEntropyLoss(), 'output_2': AnlpLoss()},
-    #     metrics={'output_1': tf.keras.metrics.AUC()},
-    #     loss_weights=[BETA, ALPHA]
-    # )
 
-    start_time = time.time()
-    steps = train_dataset.epoch_steps(2)
-    for step in range(101):
+    for step in range(_TRAIN_STEP):
         current_features, current_bids, current_target, is_win = train_dataset.next()
-        # loss_out = model.train_on_batch([current_features, current_bids], y=[current_target])
-        # model.fit(
-        #     x=[current_features, current_bids],
-        #     y=[current_target],
-        #     batch_size=128)
-        print("Prev step %s worked %s sec" % (step, '{:.4f}'.format(time.time() - start_time)))
         start_time = time.time()
+
         with tf.GradientTape() as tape:
             tape.watch(model.trainable_variables)
             survival_rate, rate_last = model.predict_on_batch([current_features, current_bids])
@@ -109,6 +116,7 @@ def train():
             loss1_value = loss1_value if is_win else None
             stat_holder_train.hold(step, cross_entropy_value, current_target, [survival_rate, rate_last], loss1_value)
 
+        print("Prev step %s worked %s sec" % (step, '{:.4f}'.format(time.time() - start_time)))
         if step > 0 and step % 10 == 0:
             stat_holder_train.flush(step)
 
@@ -129,8 +137,9 @@ def train():
 
 
 def main():
-    pass
+    train_all(3476)
+    # train_cross_entropy_only(3476)
 
 
 if __name__ == '__main__':
-    train()
+    main()
