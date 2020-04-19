@@ -19,10 +19,10 @@ class BidPrefix(layers.Layer):
             self.splitter = lambda x: tf.split(x, num_or_size_splits=2, axis=1)
         elif loss_mode == LossMode.CROSS_ENTROPY:
             self.prod_fn = self._cross_entropy_fn
-            self.splitter = lambda x: x
+            self.splitter = lambda x: tf.reshape(x, shape=(-1, 1))
         elif loss_mode == LossMode.ANLP:
             self.prod_fn = self._anlp_fn
-            self.splitter = lambda x: x
+            self.splitter = lambda x: tf.reshape(x, shape=(-1, 1))
 
     def call(self, inputs, **kwargs):
         x = tf.map_fn(self.prod_fn, elems=inputs)

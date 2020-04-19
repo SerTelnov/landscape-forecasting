@@ -9,6 +9,7 @@ from python.dataset.logger import Logger
 from python.dataset.stat_holder import StatHolder
 from python.dlf.dlf import DLF
 from python.util import LossMode, DataMode
+from python.dlf.logger_callback import LoggerCallback
 
 from python.dlf.losses import (
     cross_entropy, loss1, grad_common_loss, loss_grad
@@ -61,23 +62,38 @@ def run_test(model, step, dataset, stat_holder):
 
 
 def train_cross_entropy_only(campaign):
-    logger = Logger(campaign, DataMode.ALL_DATA, 'cross_entropy')
-
     model = DLF(LossMode.CROSS_ENTROPY)
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=_LEARNING_RATE, beta_2=_BETA_2),
-        loss=cross_entropy
+        loss=cross_entropy,
+        metrics=[tf.keras.metrics.AUC()]
     )
 
-    test_dataset = BiSparseData('../data/toy_datasets/%s_all.tsv' % campaign, _BATCH_SIZE, is_train=False)
-    train_dataset = BiSparseData('../data/toy_datasets/%s_all.tsv' % campaign, _BATCH_SIZE)
+    logger = Logger(campaign, DataMode.ALL_DATA, 'cross_entropy')
+    logger_callback = LoggerCallback(logger)
 
-    for step in range(101):
-        current_features, current_bids, current_target, is_win = train_dataset.next()
-        start_time = time.time()
-        loss_out = model.train_on_batch([current_features, current_bids], y=[current_target])
-        print("Prev step %s worked %s sec" % (step, '{:.4f}'.format(time.time() - start_time)))
-        print(loss_out)
+    # test_dataset = BiSparseData('../data/toy_datasets/%s_all.tsv' % campaign, _BATCH_SIZE, is_train=False)
+    # train_dataset = BiSparseData('../data/toy_datasets/%s_all.tsv' % campaign, _BATCH_SIZE)
+
+    test_dataset = BiSparseData('../data/3476/test_all.tsv', _BATCH_SIZE, is_train=False)
+    train_dataset = BiSparseData('../data/3476/train_all.tsv', _BATCH_SIZE)
+
+    features, bids, targets = train_dataset.get_all_data()
+    test_features, test_bids, test_targets = test_dataset.get_all_data()
+
+    model.fit(
+        x=[features, bids],
+        y=targets,
+        batch_size=_BATCH_SIZE,
+        epochs=2,
+        callbacks=[logger_callback]
+    )
+    model.evaluate(
+        x=[test_features, test_bids],
+        y=test_targets,
+        batch_size=128,
+        callbacks=[logger_callback]
+    )
 
 
 def train_all(campaign):
@@ -139,8 +155,8 @@ def train_all(campaign):
 
 
 def main():
-    train_all(3476)
-    # train_cross_entropy_only(3476)
+    # train_all(3476)
+    train_cross_entropy_only(3476)
 
 
 if __name__ == '__main__':

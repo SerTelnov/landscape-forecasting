@@ -189,3 +189,5 @@ dence слоем (?). Об этом [статья](https://data-flair.training/b
 - Подумать про функции активации. Я их брал с логикой __просто потому что__
 - Сделать больше слоев (?)
 - Добавить внимание (?)
+
+[TF v.2 vs TF v.1](https://stackoverflow.com/questions/58441514/why-is-tensorflow-2-much-slower-than-tensorflow-1)

@@ -9,6 +9,7 @@ class StatHolder:
 
     def __init__(self, category, logger, is_train=True):
         self.anlp_loss = []
+        self.auc = []
         self.cross_entropy = []
         self.auc_label = []
         self.auc_prob = []
@@ -16,10 +17,15 @@ class StatHolder:
         self.category = category
         self.is_train = is_train
 
-    def hold(self, step, cross_entropy, targets, prediction, anlp_loss=None):
+    def hold(self, step, cross_entropy, auc=None, targets=None, prediction=None, anlp_loss=None):
         self.cross_entropy.append(cross_entropy)
-        self.auc_label.append(targets)
-        self.auc_prob.append(prediction[0].numpy())
+
+        if auc is not None:
+            self.auc.append(auc)
+        else:
+            self.auc_label.append(targets)
+            self.auc_prob.append(prediction[0].numpy())
+
         if anlp_loss is not None:
             self.anlp_loss.append(anlp_loss)
         self._log(step)
@@ -31,10 +37,13 @@ class StatHolder:
     def flush(self, step):
         mean_anlp = StatHolder._mean_value(self.anlp_loss)
         mean_loss = StatHolder._mean_value(self.cross_entropy)
-        mean_auc = StatHolder._roc_score(
-            np.reshape(self.auc_label, [1, -1])[0],
-            np.reshape(self.auc_prob, [1, -1])[0]
-        )
+        if len(self.auc) > 0:
+            mean_auc = np.mean(self.auc)
+        else:
+            mean_auc = StatHolder._roc_score(
+                np.reshape(self.auc_label, [1, -1])[0],
+                np.reshape(self.auc_prob, [1, -1])[0]
+            )
         self.logger.log(self.category, step, mean_loss, mean_anlp, mean_auc)
 
         self.anlp_loss = []

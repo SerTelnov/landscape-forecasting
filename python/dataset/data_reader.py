@@ -106,7 +106,9 @@ class BiSparseData:
         return features, bids, targets, win
 
     def get_all_data(self):
-        return self.winData.features, self.winData.labels
+        return np.concatenate([self.winData.features, self.loseData.features]), \
+                np.concatenate([self.winData.bids, self.loseData.bids]), \
+                np.concatenate([self.winData.labels, self.loseData.labels])
 
     def next_win(self):
         return self.winData.next(self.batch_size, self.is_train)
