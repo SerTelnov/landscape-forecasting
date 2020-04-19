@@ -1,21 +1,20 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-import tensorflow as tf
 import time
+
+import tensorflow as tf
 
 from python.dataset.data_reader import BiSparseData
 from python.dataset.logger import Logger
 from python.dataset.stat_holder import StatHolder
 from python.dlf.dlf import DLF
-from python.util import LossMode, DataMode
-from python.dlf.logger_callback import LoggerCallback
-
 from python.dlf.losses import (
     cross_entropy, loss1, grad_common_loss, loss_grad
 )
+from python.util import LossMode, DataMode
 
-_TRAIN_STEP = 21000
+_TRAIN_STEP = 21010
 _TEST_STEP = 310
 _BATCH_SIZE = 128
 
@@ -61,84 +60,72 @@ def run_test(model, step, dataset, stat_holder):
     dataset.reshuffle()
 
 
-def train_cross_entropy_only(campaign):
-    model = DLF(LossMode.CROSS_ENTROPY)
-    model.compile(
-        optimizer=tf.keras.optimizers.Adam(learning_rate=_LEARNING_RATE, beta_2=_BETA_2),
-        loss=cross_entropy,
-        metrics=[tf.keras.metrics.AUC()]
-    )
-
-    logger = Logger(campaign, DataMode.ALL_DATA, 'cross_entropy')
-    logger_callback = LoggerCallback(logger)
-
-    # test_dataset = BiSparseData('../data/toy_datasets/%s_all.tsv' % campaign, _BATCH_SIZE, is_train=False)
-    # train_dataset = BiSparseData('../data/toy_datasets/%s_all.tsv' % campaign, _BATCH_SIZE)
-
-    test_dataset = BiSparseData('../data/3476/test_all.tsv', _BATCH_SIZE, is_train=False)
-    train_dataset = BiSparseData('../data/3476/train_all.tsv', _BATCH_SIZE)
-
-    features, bids, targets = train_dataset.get_all_data()
-    test_features, test_bids, test_targets = test_dataset.get_all_data()
-
-    model.fit(
-        x=[features, bids],
-        y=targets,
-        batch_size=_BATCH_SIZE,
-        epochs=2,
-        callbacks=[logger_callback]
-    )
-    model.evaluate(
-        x=[test_features, test_bids],
-        y=test_targets,
-        batch_size=128,
-        callbacks=[logger_callback]
-    )
+def _get_dataset(path, campaign, data_mode=DataMode.ALL_DATA, is_train=True):
+    mode = {
+        DataMode.ALL_DATA: "all",
+        DataMode.WIN_ONLY: "win",
+        DataMode.LOSS_ONLY: "lose"
+    }[data_mode]
+    dataset_option = 'train' if is_train else 'test'
+    return BiSparseData('%s/%s/%s_%s.tsv' % (path, campaign, dataset_option, mode), _BATCH_SIZE, is_train=is_train)
 
 
-def train_all(campaign):
-    logger = Logger(campaign, DataMode.ALL_DATA)
+def train_model(campaign, loss_mode=LossMode.ALL_LOSS, data_mode=DataMode.ALL_DATA):
+    logger = Logger(campaign, data_mode)
 
     stat_holder_train = StatHolder('TRAIN', logger)
     stat_holder_test = StatHolder('TEST', logger, is_train=False)
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=_LEARNING_RATE, beta_2=_BETA_2)
 
-    test_dataset = BiSparseData('../data/toy_datasets/%s_all.tsv' % campaign, _BATCH_SIZE, is_train=False)
-    train_dataset = BiSparseData('../data/toy_datasets/%s_all.tsv' % campaign, _BATCH_SIZE)
+    train_dataset = _get_dataset('../data', 'toy_datasets', data_mode)
+    test_dataset = _get_dataset('../data', 'toy_datasets', data_mode, is_train=False)
 
-    # test_dataset = BiSparseData('data/3476/test_all.tsv', _BATCH_SIZE, is_train=False)
-    # train_dataset = BiSparseData('data/3476/train_all.tsv', _BATCH_SIZE)
+    # train_dataset = _get_dataset('../data', str(campaign), data_mode)
+    # test_dataset = _get_dataset('../data', str(campaign), data_mode, is_train=False)
 
     model = DLF()
     model.build(input_shape=([_BATCH_SIZE, 16], [_BATCH_SIZE, 2]))
 
-    for step in range(_TRAIN_STEP):
+    steps = min(_TRAIN_STEP, train_dataset.epoch_steps(2))
+    for step in range(steps):
         current_features, current_bids, current_target, is_win = train_dataset.next()
         start_time = time.time()
 
+        model.predict_on_batch([current_features, current_bids])
         with tf.GradientTape() as tape:
+            print(model.trainable_variables)
             tape.watch(model.trainable_variables)
             survival_rate, rate_last = model.predict_on_batch([current_features, current_bids])
 
-            if is_win:
+            if is_win and loss_mode == LossMode.ALL_LOSS:
                 loss1_value = loss1(current_target, survival_rate)
                 cross_entropy_value = cross_entropy(current_target, rate_last)
 
                 loss_common, grads = grad_common_loss(tape, model.trainable_variables, loss1_value, cross_entropy_value)
                 optimizer.apply_gradients(zip(grads, model.trainable_variables))
-            else:
+            elif not is_win or loss_mode == LossMode.CROSS_ENTROPY:
                 cross_entropy_value, grads = loss_grad(tape, model.trainable_variables, current_target, survival_rate, cross_entropy)
+                loss1_value = None
+                optimizer.apply_gradients(zip(grads, model.trainable_variables))
+            else:
+                cross_entropy_value = None
+                loss1_value,  grads = loss_grad(tape, model.trainable_variables, current_target, survival_rate, cross_entropy_value)
                 optimizer.apply_gradients(zip(grads, model.trainable_variables))
 
-            loss1_value = loss1_value if is_win else None
-            stat_holder_train.hold(step, cross_entropy_value, current_target, [survival_rate, rate_last], loss1_value)
+            stat_holder_train.hold(
+                step,
+                cross_entropy=cross_entropy_value,
+                targets=current_target,
+                prediction=[survival_rate, rate_last],
+                anlp_loss=loss1_value
+            )
 
         print("Prev step %s worked %s sec" % (step, '{:.4f}'.format(time.time() - start_time)))
         if step > 0 and step % 10 == 0:
             stat_holder_train.flush(step)
 
-        if 300 <= step < 500:
+        if 100 <= step < 500:
             if step % 100 == 0:
                 run_test(model, step, test_dataset, stat_holder_test)
         elif 500 <= step < 2000:
@@ -147,16 +134,15 @@ def train_all(campaign):
         elif 2000 <= step < 10000:
             if step % 2000 == 0:
                 run_test(model, step, test_dataset, stat_holder_test)
-        elif 21000 < step:
+        elif 10000 <= step < 21000:
             if step % 3000 == 0:
                 run_test(model, step, test_dataset, stat_holder_test)
 
-    run_test(model, _TRAIN_STEP, test_dataset, stat_holder_test)
+    run_test(model, steps, test_dataset, stat_holder_test)
 
 
 def main():
-    # train_all(3476)
-    train_cross_entropy_only(3476)
+    train_model(2997)
 
 
 if __name__ == '__main__':

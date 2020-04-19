@@ -96,15 +96,15 @@ def _make_out_path(out_dir, out_name_prefix, rebuild_mode):
 
 
 # rebuild_dataset(
-#     dataset_path='../../data/3476/low_train.yzbx.txt',
-#     out_name_prefix='train',
-#     out_dir='../../data/3476/'
+#     dataset_path='../../data/2997/test.yzbx.txt',
+#     out_name_prefix='test',
+#     out_dir='../../data/2997/'
 # )
 
 
 # build_toy_dataset(
 #     dataset_path='../../data/3476/test_all.tsv',
-#     dataset_name='3476_all.tsv',
+#     dataset_name='train_all.tsv',
 #     size=2048,
 #     data_mode=DataMode.ALL_DATA
 # )

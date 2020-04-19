@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-import numpy as np
+import math
 import random
 import time
-import math
 
-from python.dataset.dataset_builder import DataMode, SEPARATOR
+import numpy as np
+
+from python.dataset.dataset_builder import SEPARATOR
+from python.util import DataMode
 
 
 class SparseData:
@@ -72,18 +74,27 @@ class SparseData:
 
 class BiSparseData:
 
-    def __init__(self, file_path, batch_size, is_train=True):
+    def __init__(self, file_path, batch_size, data_mode=DataMode.ALL_DATA, is_train=True):
         random.seed(time.time())
         self.batch_size = batch_size
-        self.winData = SparseData(file_path, DataMode.WIN_ONLY)
-        self.loseData = SparseData(file_path, DataMode.LOSS_ONLY)
-        self.size = self.winData.size + self.loseData.size
         self.is_train = is_train
+        self.data_mode = data_mode
+
+        if data_mode == DataMode.ALL_DATA:
+            self.winData = SparseData(file_path, DataMode.WIN_ONLY)
+            self.loseData = SparseData(file_path, DataMode.LOSS_ONLY)
+            self.size = self.winData.size + self.loseData.size
+        elif data_mode == DataMode.WIN_ONLY:
+            self.winData = SparseData(file_path, DataMode.WIN_ONLY)
+            self.loseData = None
+            self.size = self.winData.size
+        elif data_mode == DataMode.LOSS_ONLY:
+            self.winData = None
+            self.loseData = SparseData(file_path, DataMode.LOSS_ONLY)
+            self.size = self.loseData.size
 
     def epoch_steps(self, epoch_number):
-        lose_batches = self.loseData.size // self.batch_size
-        win_batches = self.winData.size // self.batch_size
-        return (lose_batches + win_batches) * epoch_number
+        return (self.size // self.batch_size) * epoch_number
 
     def next(self):
         win = int(random.random() * 100) % 11 <= 5
@@ -98,6 +109,9 @@ class BiSparseData:
                 win = False
             elif not has_loss:
                 win = True
+
+        if self.data_mode != DataMode.ALL_DATA:
+            win = self.data_mode == DataMode.WIN_ONLY
 
         # win = True
         # win = False
@@ -127,5 +141,7 @@ class BiSparseData:
         return self.loseData.number_of_chunks(self.batch_size)
 
     def reshuffle(self):
-        self.winData.reshuffle()
-        self.loseData.reshuffle()
+        if self.winData:
+            self.winData.reshuffle()
+        if self.loseData:
+            self.loseData.reshuffle()
