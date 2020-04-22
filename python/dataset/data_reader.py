@@ -27,9 +27,9 @@ class SparseData:
 
                 if bid_price <= market_price:
                     if data_mode != DataMode.WIN_ONLY:
-                        label = 0.
+                        label = 1.
                 elif data_mode != DataMode.LOSS_ONLY:
-                    label = 1.
+                    label = 0.
 
                 if label is not None:
                     self.features.append(features[2:])

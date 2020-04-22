@@ -9,15 +9,13 @@ from python.dataset.logger import Logger
 from python.dataset.stat_holder import StatHolder
 from python.dlf.dlf import DLF
 from python.dlf.losses import (
-    cross_entropy, loss1, grad_common_loss, loss_grad
+    cross_entropy, loss1, grad_common_loss, loss_grad, cost, grad_cross_entropy
 )
-from python.util import LossMode, DataMode, LEARNING_RATE
+from python.util import LossMode, DataMode, LEARNING_RATE, BATCH_SIZE
 
 _TRAIN_STEP = 21010
 _TEST_STEP = 310
-_BATCH_SIZE = 128
 
-_LEARNING_RATE = 1e-3
 _BETA_2 = 0.99
 
 
@@ -77,7 +75,7 @@ def _get_dataset(path, campaign, data_mode=DataMode.ALL_DATA, is_train=True):
         DataMode.LOSS_ONLY: "lose"
     }[data_mode]
     dataset_option = 'train' if is_train else 'test'
-    return BiSparseData('%s/%s/%s_%s.tsv' % (path, campaign, dataset_option, mode), _BATCH_SIZE, is_train=is_train)
+    return BiSparseData('%s/%s/%s_%s.tsv' % (path, campaign, dataset_option, mode), BATCH_SIZE, is_train=is_train)
 
 
 def train_model(campaign, loss_mode=LossMode.ALL_LOSS, data_mode=DataMode.ALL_DATA):
@@ -95,7 +93,7 @@ def train_model(campaign, loss_mode=LossMode.ALL_LOSS, data_mode=DataMode.ALL_DA
     # test_dataset = _get_dataset('../data', str(campaign), data_mode, is_train=False)
 
     model = DLF()
-    model.build(input_shape=([_BATCH_SIZE, 16], [_BATCH_SIZE, 2]))
+    model.build(input_shape=([BATCH_SIZE, 16], [BATCH_SIZE, 2]))
 
     steps = min(_TRAIN_STEP, train_dataset.epoch_steps(2))
     for step in range(steps):
@@ -108,7 +106,7 @@ def train_model(campaign, loss_mode=LossMode.ALL_LOSS, data_mode=DataMode.ALL_DA
 
             cross_entropy_value = None
             if is_win and loss_mode == LossMode.ALL_LOSS:
-                cross_entropy_value = cross_entropy(current_target, rate_last)
+                cross_entropy_value = cost(current_target, rate_last, model.trainable_variables)
                 loss1_value = loss1(current_target, survival_rate)
 
                 loss_common, grads = grad_common_loss(tape, model.trainable_variables, loss1_value, cross_entropy_value)
@@ -117,7 +115,8 @@ def train_model(campaign, loss_mode=LossMode.ALL_LOSS, data_mode=DataMode.ALL_DA
                 loss1_value,  grads = loss_grad(tape, model.trainable_variables, current_target, survival_rate, loss1)
                 optimizer.apply_gradients(zip(grads, model.trainable_variables))
             elif loss_mode != LossMode.ANLP:
-                cross_entropy_value, grads = loss_grad(tape, model.trainable_variables, current_target, survival_rate, cross_entropy)
+                # cross_entropy_value, grads = loss_grad(tape, model.trainable_variables, current_target, survival_rate, cross_entropy)
+                cross_entropy_value, grads = grad_cross_entropy(tape, model.trainable_variables, current_target, survival_rate)
                 loss1_value = None
                 optimizer.apply_gradients(zip(grads, model.trainable_variables))
 
