@@ -12,3 +12,8 @@ class DataMode(Enum):
     WIN_ONLY = 2
     LOSS_ONLY = 3
 
+
+SMALL_VALUE = 1e-20
+ALPHA = 0.25
+BETA = 0.2
+LEARNING_RATE = 0.0001

@@ -2,12 +2,10 @@
 # coding=utf-8
 
 import tensorflow as tf
+import python.util as util
 
-_SMALL_VALUE = 1e-20
 _L2_NORM = 0.001
 _GRAD_CLIP = 5.0
-ALPHA = 0.25
-BETA = 0.2
 
 
 def cross_entropy(y_true, y_pred):
@@ -28,7 +26,7 @@ def _clip_values(x):
 
 
 def loss1(y_true, y_pred):
-    return -tf.reduce_mean(tf.math.log(tf.add(y_pred, _SMALL_VALUE)))
+    return -tf.reduce_mean(tf.math.log(tf.add(y_pred, util.SMALL_VALUE)))
 
 # @tf.function
 # def loss1(target, prediction):
@@ -52,7 +50,7 @@ def loss1(y_true, y_pred):
 
 
 def common_loss(l1, l2):
-    return l1 * BETA + l2 * ALPHA
+    return l1 * util.BETA + l2 * util.ALPHA
 
 
 def loss_grad(tape, tvar, target, pred, loss_function):

@@ -18,7 +18,8 @@ class StatHolder:
         self.is_train = is_train
 
     def hold(self, step, cross_entropy, auc=None, targets=None, prediction=None, anlp_loss=None):
-        self.cross_entropy.append(cross_entropy)
+        if cross_entropy is not None:
+            self.cross_entropy.append(cross_entropy)
 
         if auc is not None:
             self.auc.append(auc)
@@ -37,6 +38,7 @@ class StatHolder:
     def flush(self, step):
         mean_anlp = StatHolder._mean_value(self.anlp_loss)
         mean_loss = StatHolder._mean_value(self.cross_entropy)
+
         if len(self.auc) > 0:
             mean_auc = np.mean(self.auc)
         else:

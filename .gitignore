@@ -1,3 +1,6 @@
 # datasets
 data/
 output/
+
+# Word tmp files
+~$*.docx
