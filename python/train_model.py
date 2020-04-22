@@ -34,7 +34,7 @@ def run_test_win(model, step, dataset, stat_holder, test_all_data):
 
         features, bids, targets = dataset.next_win()
         survival_rate, rate_last = model.predict_on_batch([features, bids])
-        cross_entropy_value = cross_entropy(targets, survival_rate)
+        cross_entropy_value = cost(targets, survival_rate, model.trainable_variables)
         loss1_value = loss1(targets, rate_last)
 
         stat_holder.hold(
@@ -57,7 +57,7 @@ def run_test_loss(model, step, dataset, stat_holder, test_all_data):
             print("Iter number %d/%d" % (i, steps))
         features, bids, targets = dataset.next_loss()
         survival_rate, rate_last = model.predict_on_batch([features, bids])
-        cross_entropy_value = cross_entropy(targets, survival_rate)
+        cross_entropy_value = cost(targets, survival_rate, model.trainable_variables)
         stat_holder.hold(
             step,
             cross_entropy=cross_entropy_value,
