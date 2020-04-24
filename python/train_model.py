@@ -106,17 +106,18 @@ def train_model(campaign, loss_mode=LossMode.ALL_LOSS, data_mode=DataMode.ALL_DA
 
             cross_entropy_value = None
             if is_win and loss_mode == LossMode.ALL_LOSS:
-                cross_entropy_value = cost(current_target, rate_last, model.trainable_variables)
-                loss1_value = loss1(current_target, survival_rate)
+                cross_entropy_value = cross_entropy(current_target, survival_rate)
+                # cross_entropy_value = cost(current_target, rate_last, model.trainable_variables)
+                loss1_value = loss1(current_target, rate_last)
 
                 loss_common, grads = grad_common_loss(tape, model.trainable_variables, loss1_value, cross_entropy_value)
                 optimizer.apply_gradients(zip(grads, model.trainable_variables))
             elif is_win and loss_mode == LossMode.ANLP:
-                loss1_value,  grads = loss_grad(tape, model.trainable_variables, current_target, survival_rate, loss1)
+                loss1_value,  grads = loss_grad(tape, model.trainable_variables, current_target, rate_last, loss1)
                 optimizer.apply_gradients(zip(grads, model.trainable_variables))
             elif loss_mode != LossMode.ANLP:
-                # cross_entropy_value, grads = loss_grad(tape, model.trainable_variables, current_target, survival_rate, cross_entropy)
-                cross_entropy_value, grads = grad_cross_entropy(tape, model.trainable_variables, current_target, survival_rate)
+                cross_entropy_value, grads = loss_grad(tape, model.trainable_variables, current_target, survival_rate, cross_entropy)
+                # cross_entropy_value, grads = grad_cross_entropy(tape, model.trainable_variables, current_target, survival_rate)
                 loss1_value = None
                 optimizer.apply_gradients(zip(grads, model.trainable_variables))
 
