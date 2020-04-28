@@ -125,16 +125,16 @@ class BiSparseData:
         features, bids, targets = current_data_type.next(self.batch_size, self.is_train)
         return features, bids, targets, win
 
-    def get_all_data(self):
-        return np.concatenate([self.winData.features, self.loseData.features]), \
-                np.concatenate([self.winData.bids, self.loseData.bids]), \
-                np.concatenate([self.winData.labels, self.loseData.labels])
-
     def next_win(self):
         return self.winData.next(self.batch_size, self.is_train)
 
     def next_loss(self):
         return self.loseData.next(self.batch_size, self.is_train)
+
+    def get_all_data(self):
+        return np.concatenate([self.winData.features, self.loseData.features]), \
+                np.concatenate([self.winData.bids, self.loseData.bids]), \
+                np.concatenate([self.winData.labels, self.loseData.labels])
 
     def chunks_number(self):
         return self.winData.number_of_chunks(self.batch_size) + \

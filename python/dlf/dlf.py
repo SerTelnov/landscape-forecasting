@@ -8,6 +8,7 @@ from python.dlf.bid_embedding import BidEmbeddingLayer
 from python.dlf.bid_prefix import BidPrefix
 from python.dlf.bid_reshaper import BidReshape
 from python.dlf.bid_rnn import BidRNNLayer
+from python.dlf.attention_rnn import BidAttentionRNNLayer
 from python.util import LossMode
 
 
@@ -22,7 +23,8 @@ class DLF(models.Model):
         self.loss_mode = loss_mode
         self.embedding_layer = None
         self.bid_reshape = BidReshape(self._MAX_SEQ_LEN)
-        self.rnn = BidRNNLayer(self._STATE_SIZE)
+        # self.rnn = BidRNNLayer(self._STATE_SIZE)
+        self.attention_rnn = BidAttentionRNNLayer(self._STATE_SIZE)
         self.bid_prefix = None
 
     def build(self, input_shape):
@@ -37,7 +39,8 @@ class DLF(models.Model):
         features, bid_info = inputs
         x = self.embedding_layer(features)
         x = self.bid_reshape(x)
-        x = self.rnn(x)
+        # x = self.rnn(x)
+        x = self.attention_rnn(x)
         x = tf.concat([x, tf.cast(bid_info, dtype=tf.float32)], axis=1)
         x = self.bid_prefix(x)
         return x

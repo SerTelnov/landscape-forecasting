@@ -4,3 +4,4 @@ output/
 
 # Word tmp files
 ~$*.docx
+~$*.pptx

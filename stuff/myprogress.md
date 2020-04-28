@@ -162,7 +162,7 @@ TODO перечитать и дописать
 * [X] Почитал документацию tensorflow, чтобы примерно понять как с ним работать.
 * [X] Написать свою модель 
     (план капкан - копировать куски кода из модели стати и рефакторить с использованием нормальных подходов)
-* [ ] Подумать как можно быстро это тестировать
+* [X] Подумать как можно быстро это тестировать
 
 Параллельно буду писать свои идеи что плохо и можно улучшить
 
@@ -191,3 +191,20 @@ dence слоем (?). Об этом [статья](https://data-flair.training/b
 - Добавить внимание (?)
 
 [TF v.2 vs TF v.1](https://stackoverflow.com/questions/58441514/why-is-tensorflow-2-much-slower-than-tensorflow-1)
+
+
+## 8. Добавляю механизм внимания
+
+### Что сделать тут
+
+* [ ] Прочитать про attention/self-attention
+* [ ] Разобраться [статью](https://openreview.net/pdf?id=rJG8asRqKX) где использовали Attention в Survival analysis
+* [ ] Реализовать attention в tensorflow
+ 
+ 
+Хорошие статьи про self-attention 
+ - https://towardsdatascience.com/illustrated-self-attention-2d627e33b20a
+ - https://lilianweng.github.io/lil-log/2018/06/24/attention-attention.html
+ - https://medium.com/@Alibaba_Cloud/self-attention-mechanisms-in-natural-language-processing-9f28315ff905
+ - https://blog.floydhub.com/attention-mechanism/
+ - [публикация attention в переводе](https://arxiv.org/pdf/1409.0473.pdf)

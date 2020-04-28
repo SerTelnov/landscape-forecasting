@@ -19,13 +19,14 @@ _TEST_STEP = 310
 _BETA_2 = 0.99
 
 
-def run_test_win(model, step, dataset, stat_holder):
+def run_test_win(model, step, dataset, stat_holder, test_all_data):
     print("Win data TEST")
-    steps = min(dataset.win_epoch_steps(), _TEST_STEP)
+    epoch_steps = dataset.win_epoch_steps()
+    steps = epoch_steps if test_all_data else min(epoch_steps, _TEST_STEP)
 
     for i in range(steps):
         if i > 0 and i % 100 == 0:
-            print("Iter number #%s" % i)
+            print("Iter number %d/%d" % (i, steps))
 
         features, bids, targets = dataset.next_win()
         survival_rate, rate_last = model.predict_on_batch([features, bids])
@@ -40,13 +41,14 @@ def run_test_win(model, step, dataset, stat_holder):
         )
 
 
-def run_test_loss(model, step, dataset, stat_holder):
+def run_test_loss(model, step, dataset, stat_holder, test_all_data):
     print("Loss data TEST")
-    steps = min(dataset.loss_epoch_steps(), _TEST_STEP)
+    epoch_steps = dataset.loss_epoch_steps()
+    steps = epoch_steps if test_all_data else min(epoch_steps, _TEST_STEP)
 
     for i in range(steps):
         if i > 0 and i % 100 == 0:
-            print("Iter number #%s" % i)
+            print("Iter number %d/%d" % (i, steps))
         features, bids, targets = dataset.next_loss()
         survival_rate, rate_last = model.predict_on_batch([features, bids])
         cross_entropy_value = cross_entropy(targets, survival_rate)
@@ -59,10 +61,10 @@ def run_test_loss(model, step, dataset, stat_holder):
         )
 
 
-def run_test(model, step, dataset, stat_holder):
+def run_test(model, step, dataset, stat_holder, test_all_data=False):
     print('Test started...')
-    run_test_win(model, step, dataset, stat_holder)
-    run_test_loss(model, step, dataset, stat_holder)
+    run_test_win(model, step, dataset, stat_holder, test_all_data)
+    run_test_loss(model, step, dataset, stat_holder, test_all_data)
 
     stat_holder.flush(step)
     dataset.reshuffle()
@@ -94,6 +96,7 @@ def train_model(campaign, loss_mode=LossMode.ALL_LOSS, data_mode=DataMode.ALL_DA
 
     model = DLF()
     model.build(input_shape=([BATCH_SIZE, 16], [BATCH_SIZE, 2]))
+    model.run_eagerly = True
 
     steps = min(_TRAIN_STEP, train_dataset.epoch_steps(2))
     for step in range(steps):
@@ -146,7 +149,7 @@ def train_model(campaign, loss_mode=LossMode.ALL_LOSS, data_mode=DataMode.ALL_DA
             if step % 3000 == 0:
                 run_test(model, step, test_dataset, stat_holder_test)
 
-    run_test(model, steps, test_dataset, stat_holder_test)
+    run_test(model, steps, test_dataset, stat_holder_test, test_all_data=True)
 
 
 def main():
