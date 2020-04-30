@@ -208,3 +208,9 @@ dence слоем (?). Об этом [статья](https://data-flair.training/b
  - https://medium.com/@Alibaba_Cloud/self-attention-mechanisms-in-natural-language-processing-9f28315ff905
  - https://blog.floydhub.com/attention-mechanism/
  - [публикация attention в переводе](https://arxiv.org/pdf/1409.0473.pdf)
+ - https://machinelearningmastery.com/encoder-decoder-attention-sequence-to-sequence-prediction-keras/
+ 
+Статьи про описание LSTM в tensorflow
+ -  https://www.dlology.com/blog/how-to-use-return_state-or-return_sequences-in-keras/
+ - https://machinelearningmastery.com/return-sequences-and-return-states-for-lstms-in-keras/
+ 
