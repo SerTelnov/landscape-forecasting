@@ -64,8 +64,8 @@ def common_loss(l1, l2):
     return l1 * ALPHA + l2 * BETA
 
 
-def loss_grad(tape, tvar, target, pred, loss_function):
-    loss_value = loss_function(target, pred)
+def loss_grad(tape, tvar, target, prediction, loss_function):
+    loss_value = loss_function(target, prediction)
     return _grad_(tape, loss_value, tvar)
 
 

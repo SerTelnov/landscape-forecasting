@@ -94,7 +94,7 @@ class BiSparseData:
             self.loseData = SparseData(file_path, DataMode.LOSS_ONLY)
             self.size = self.loseData.size
 
-    def epoch_steps(self, epoch_number):
+    def epoch_steps(self, epoch_number=1):
         return (self.size // self.batch_size) * epoch_number
 
     def win_epoch_steps(self, epoch_number=1):

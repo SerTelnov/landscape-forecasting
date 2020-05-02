@@ -15,8 +15,9 @@ class Logger:
     _LABELS = ['campaign', 'category', 'step', 'cross_entropy', 'mean_anlp', 'common_loss', 'mean_auc']
 
     def __init__(self, campaign, data_mode, loss_mode=LossMode.ALL_LOSS, model_mode=ModelMode.DLF):
-        self.campaign = campaign
-        self.log_file = self._get_log_name(campaign, model_mode, data_mode, loss_mode)
+        self._campaign = campaign
+        self._log_filename = self._get_log_name(campaign, model_mode, data_mode, loss_mode)
+        self._log_path = Logger._PATH_PREFIX + self._log_filename + '.tsv'
         self._force_write(SEPARATOR.join(Logger._LABELS))
 
     def log(self, category, step, cross_entropy, mean_anlp, mean_auc):
@@ -26,7 +27,7 @@ class Logger:
 
     def _stat_str(self, category, step, mean_cross_entropy, mean_anlp, mean_auc):
         common_loss = ALPHA * mean_anlp + BETA * mean_cross_entropy if mean_cross_entropy and mean_anlp else None
-        log = [str(self.campaign), category, str(step),
+        log = [str(self._campaign), category, str(step),
                Logger._to_str('{:.6f}', mean_cross_entropy),
                Logger._to_str('{:.4f}', mean_anlp),
                Logger._to_str('{:.4f}', common_loss),
@@ -34,7 +35,7 @@ class Logger:
         return SEPARATOR.join(log)
 
     def _force_write(self, info):
-        with open(self.log_file, 'a') as logfile:
+        with open(self._log_path, 'a') as logfile:
             logfile.write(info + '\n')
 
     @staticmethod
@@ -43,11 +44,15 @@ class Logger:
 
     @staticmethod
     def _get_log_name(campaign, model_mode, data_mode, loss_mode):
-        timestamp_str = datetime.strftime(datetime.now(), '%Y%m%d_%H%M')
+        timestamp_str = datetime.now().strftime('%Y%m%d_%H%M')
         data_name = data2str(data_mode)
         loss_name = loss2str(loss_mode)
         model_name = model2str(model_mode)
 
         hyper_params = '%s_%s_%s' % (ALPHA, BETA, LEARNING_RATE)
-        return Logger._PATH_PREFIX + '%s_%s_%s_%s_%s_%s.tsv' % \
+        return '%s_%s_%s_%s_%s_%s' % \
             (model_name, campaign, data_name, loss_name, hyper_params, timestamp_str)
+
+    @property
+    def model_name(self):
+        return self._log_filename

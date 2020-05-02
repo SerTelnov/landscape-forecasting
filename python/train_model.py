@@ -2,6 +2,7 @@
 # coding=utf-8
 
 import time
+import os
 
 import tensorflow as tf
 
@@ -83,6 +84,8 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
 
     stat_holder_train = StatHolder('TRAIN', logger)
     stat_holder_test = StatHolder('TEST', logger, is_train=False)
+    checkpoint_path = '../output/checkpoint/' + logger.model_name + '/cp-{epoch:02d}.ckpt'
+    os.path.dirname(checkpoint_path)
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE, beta_2=_BETA_2)
 
@@ -96,58 +99,79 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
     model.build(input_shape=([BATCH_SIZE, 16], [BATCH_SIZE, 2]))
     # model.run_eagerly = True
 
-    # steps = min(_TRAIN_STEP, train_dataset.epoch_steps(NUMBER_OF_EPOCH))
-    steps = train_dataset.epoch_steps(NUMBER_OF_EPOCH)
+    steps = train_dataset.epoch_steps()
 
-    for step in range(steps):
-        current_features, current_bids, current_target, is_win = train_dataset.next()
-        start_time = time.time()
+    for epoch in range(NUMBER_OF_EPOCH):
+        for step in range(steps):
+            current_features, current_bids, current_target, is_win = train_dataset.next()
+            start_time = time.time()
 
-        with tf.GradientTape() as tape:
-            tape.watch(model.trainable_variables)
-            survival_rate, rate_last = model.predict_on_batch([current_features, current_bids])
+            with tf.GradientTape() as tape:
+                tape.watch(model.trainable_variables)
+                survival_rate, rate_last = model.predict_on_batch([current_features, current_bids])
 
-            cross_entropy_value = None
-            if is_win and loss_mode == LossMode.ALL_LOSS:
-                cross_entropy_value = cross_entropy(current_target, survival_rate)
-                loss1_value = loss1(current_target, rate_last)
-
-                loss_common, grads = grad_common_loss(tape, model.trainable_variables, loss1_value, cross_entropy_value)
-                optimizer.apply_gradients(zip(grads, model.trainable_variables))
-            elif is_win and loss_mode == LossMode.ANLP:
-                loss1_value,  grads = loss_grad(tape, model.trainable_variables, current_target, rate_last, loss1)
-                optimizer.apply_gradients(zip(grads, model.trainable_variables))
-            elif loss_mode != LossMode.ANLP:
-                cross_entropy_value, grads = loss_grad(tape, model.trainable_variables, current_target, survival_rate, cross_entropy)
+                cross_entropy_value = None
                 loss1_value = None
-                optimizer.apply_gradients(zip(grads, model.trainable_variables))
+                if is_win and loss_mode == LossMode.ALL_LOSS:
+                    cross_entropy_value = cross_entropy(current_target, survival_rate)
+                    loss1_value = loss1(current_target, rate_last)
 
+                    loss_common, grads = grad_common_loss(
+                        tape,
+                        tvar=model.trainable_variables,
+                        loss1_value=loss1_value,
+                        loss2_value=cross_entropy_value
+                    )
+                    optimizer.apply_gradients(zip(grads, model.trainable_variables))
+                elif is_win and loss_mode == LossMode.ANLP:
+                    loss1_value, grads = loss_grad(
+                        tape,
+                        tvar=model.trainable_variables,
+                        target=current_target,
+                        prediction=rate_last,
+                        loss_function=loss1
+                    )
+                    optimizer.apply_gradients(zip(grads, model.trainable_variables))
+                elif loss_mode != LossMode.ANLP:
+                    cross_entropy_value, grads = loss_grad(
+                        tape,
+                        tvar=model.trainable_variables,
+                        target=current_target,
+                        prediction=survival_rate,
+                        loss_function=cross_entropy
+                    )
+                    optimizer.apply_gradients(zip(grads, model.trainable_variables))
+
+            step_number = epoch * steps + step
             stat_holder_train.hold(
-                step,
+                step_number,
                 cross_entropy=cross_entropy_value,
+                anlp_loss=loss1_value,
                 targets=current_target,
-                prediction=[survival_rate, rate_last],
-                anlp_loss=loss1_value
+                prediction=[survival_rate, rate_last]
             )
 
-        print("Prev step %s worked %s sec" % (step, '{:.4f}'.format(time.time() - start_time)))
-        if step > 0 and step % 10 == 0:
-            stat_holder_train.flush(step)
+            print("Prev step %s worked %s sec" % (step_number, '{:.4f}'.format(time.time() - start_time)))
+            if step_number > 0 and step_number % 10 == 0:
+                stat_holder_train.flush(step_number)
 
-        if 100 <= step < 500:
-            if step % 100 == 0:
-                run_test(model, step, test_dataset, stat_holder_test)
-        elif 500 <= step < 2000:
-            if step % 500 == 0:
-                run_test(model, step, test_dataset, stat_holder_test)
-        elif 2000 <= step < 10000:
-            if step % 2000 == 0:
-                run_test(model, step, test_dataset, stat_holder_test)
-        elif 10000 <= step < 21000:
-            if step % 3000 == 0:
-                run_test(model, step, test_dataset, stat_holder_test)
+            if 100 <= step_number < 500:
+                if step_number % 100 == 0:
+                    run_test(model, step_number, test_dataset, stat_holder_test)
+            elif 500 <= step_number < 2000:
+                if step_number % 500 == 0:
+                    run_test(model, step_number, test_dataset, stat_holder_test)
+            elif 2000 <= step_number < 10000:
+                if step_number % 2000 == 0:
+                    run_test(model, step_number, test_dataset, stat_holder_test)
+            elif 10000 <= step_number < 21000:
+                if step_number % 3000 == 0:
+                    run_test(model, step_number, test_dataset, stat_holder_test)
 
-    run_test(model, steps, test_dataset, stat_holder_test, test_all_data=True)
+        print('epoch #%d came to the end' % (epoch + 1))
+
+        model.save_weights(checkpoint_path.format(model=logger.model_name, epoch=(epoch + 1)))
+        run_test(model, NUMBER_OF_EPOCH * steps, test_dataset, stat_holder_test, test_all_data=True)
 
 
 def main():
