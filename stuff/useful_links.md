@@ -39,3 +39,6 @@
 ## Будет полезно почитать
 
 - http://wnzhang.net/share/rtb-papers/bid-lands.pdf
+
+
+https://square.github.io/pysurvival/
