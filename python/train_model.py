@@ -1,17 +1,20 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-import tensorflow as tf
 import time
 
-from python.dataset.data_reader import BiSparseData
+import tensorflow as tf
+
+from python.dataset.data_reader import read_dataset
 from python.dataset.logger import Logger
 from python.dataset.stat_holder import StatHolder
 from python.dlf.dlf import DLF
 from python.dlf.losses import (
-    cross_entropy, loss1, grad_common_loss, loss_grad, cost, grad_cross_entropy
+    cross_entropy, loss1, grad_common_loss, loss_grad
 )
-from python.util import LossMode, DataMode, LEARNING_RATE, BATCH_SIZE
+from python.util import (
+    LossMode, DataMode, ModelMode, LEARNING_RATE, BATCH_SIZE, NUMBER_OF_EPOCH
+)
 
 _TRAIN_STEP = 21010
 _TEST_STEP = 310
@@ -70,35 +73,32 @@ def run_test(model, step, dataset, stat_holder, test_all_data=False):
     dataset.reshuffle()
 
 
-def _get_dataset(path, campaign, data_mode=DataMode.ALL_DATA, is_train=True):
-    mode = {
-        DataMode.ALL_DATA: "all",
-        DataMode.WIN_ONLY: "win",
-        DataMode.LOSS_ONLY: "lose"
-    }[data_mode]
-    dataset_option = 'train' if is_train else 'test'
-    return BiSparseData('%s/%s/%s_%s.tsv' % (path, campaign, dataset_option, mode), BATCH_SIZE, is_train=is_train)
-
-
-def train_model(campaign, loss_mode=LossMode.ALL_LOSS, data_mode=DataMode.ALL_DATA):
-    logger = Logger(campaign, data_mode, loss_mode=loss_mode)
+def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=DataMode.ALL_DATA):
+    logger = Logger(
+        campaign=campaign,
+        model_mode=model_mode,
+        data_mode=data_mode,
+        loss_mode=loss_mode
+    )
 
     stat_holder_train = StatHolder('TRAIN', logger)
     stat_holder_test = StatHolder('TEST', logger, is_train=False)
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE, beta_2=_BETA_2)
 
-    train_dataset = _get_dataset('../data', 'toy_datasets', data_mode)
-    test_dataset = _get_dataset('../data', 'toy_datasets', data_mode, is_train=False)
+    train_dataset = read_dataset('../data', 'toy_datasets', data_mode)
+    test_dataset = read_dataset('../data', 'toy_datasets', data_mode, is_train=False)
 
-    # train_dataset = _get_dataset('../data', str(campaign), data_mode)
-    # test_dataset = _get_dataset('../data', str(campaign), data_mode, is_train=False)
+    # train_dataset = read_dataset('../data', str(campaign), data_mode)
+    # test_dataset = read_dataset('../data', str(campaign), data_mode, is_train=False)
 
-    model = DLF()
+    model = DLF(model_mode)
     model.build(input_shape=([BATCH_SIZE, 16], [BATCH_SIZE, 2]))
-    model.run_eagerly = True
+    # model.run_eagerly = True
 
-    steps = min(_TRAIN_STEP, train_dataset.epoch_steps(2))
+    # steps = min(_TRAIN_STEP, train_dataset.epoch_steps(NUMBER_OF_EPOCH))
+    steps = train_dataset.epoch_steps(NUMBER_OF_EPOCH)
+
     for step in range(steps):
         current_features, current_bids, current_target, is_win = train_dataset.next()
         start_time = time.time()
@@ -110,7 +110,6 @@ def train_model(campaign, loss_mode=LossMode.ALL_LOSS, data_mode=DataMode.ALL_DA
             cross_entropy_value = None
             if is_win and loss_mode == LossMode.ALL_LOSS:
                 cross_entropy_value = cross_entropy(current_target, survival_rate)
-                # cross_entropy_value = cost(current_target, rate_last, model.trainable_variables)
                 loss1_value = loss1(current_target, rate_last)
 
                 loss_common, grads = grad_common_loss(tape, model.trainable_variables, loss1_value, cross_entropy_value)
@@ -120,7 +119,6 @@ def train_model(campaign, loss_mode=LossMode.ALL_LOSS, data_mode=DataMode.ALL_DA
                 optimizer.apply_gradients(zip(grads, model.trainable_variables))
             elif loss_mode != LossMode.ANLP:
                 cross_entropy_value, grads = loss_grad(tape, model.trainable_variables, current_target, survival_rate, cross_entropy)
-                # cross_entropy_value, grads = grad_cross_entropy(tape, model.trainable_variables, current_target, survival_rate)
                 loss1_value = None
                 optimizer.apply_gradients(zip(grads, model.trainable_variables))
 
@@ -153,7 +151,7 @@ def train_model(campaign, loss_mode=LossMode.ALL_LOSS, data_mode=DataMode.ALL_DA
 
 
 def main():
-    train_model(2997)
+    train_model(2997, model_mode=ModelMode.DLF)
 
 
 if __name__ == '__main__':

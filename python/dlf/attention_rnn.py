@@ -26,11 +26,6 @@ class BidAttentionRNNLayer(layers.Layer):
         self.built = True
 
     def call(self, inputs, **kwargs):
-
-        # x = self.rnn(inputs)
-        # print(state_h.shape)
-        # print(state_c.shape)
-        # x = self.rnn(inputs)
         x, state_h, state_c = self.rnn(inputs)
         x = self.attention([x, state_h])
         x = self.dense(x)

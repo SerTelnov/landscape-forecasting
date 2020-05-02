@@ -7,8 +7,9 @@ import time
 
 import numpy as np
 
-from python.dataset.dataset_builder import SEPARATOR
-from python.util import DataMode
+from python.util import (
+    DataMode, SEPARATOR, BATCH_SIZE, data2str
+)
 
 
 class SparseData:
@@ -151,3 +152,10 @@ class BiSparseData:
             self.winData.reshuffle()
         if self.loseData:
             self.loseData.reshuffle()
+
+
+def read_dataset(path, campaign, data_mode=DataMode.ALL_DATA, is_train=True):
+    data_name = data2str(data_mode)
+    dataset_option = 'train' if is_train else 'test'
+    path = '%s/%s/%s_%s.tsv' % (path, campaign, dataset_option, data_name)
+    return BiSparseData(path, BATCH_SIZE, data_mode, is_train)

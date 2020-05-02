@@ -3,13 +3,14 @@
 
 import numpy as np
 import random
-from python.util import DataMode
+from python.util import (
+    DataMode, SEPARATOR,
+    data2str, loss2str
+)
 
 _LABELS = ["market_price", "bid", "weekday", "hour", "IP", "region", "city",
            "adexchange", "domain", "slotid", "slotwidth", "slotheight",
            "slotvisibility", "slotformat", "creative", "advertiser", "useragent", "slotprice"]
-
-SEPARATOR = '\t'
 
 
 def build_toy_dataset(dataset_path, dataset_name, size, data_mode=DataMode.ALL_DATA):
@@ -80,11 +81,7 @@ def rebuild_dataset(dataset_path, out_dir, out_name_prefix, add_title=False, reb
 
 
 def _make_out_path(out_dir, out_name_prefix, rebuild_mode):
-    suffix = {
-        DataMode.ALL_DATA: "all",
-        DataMode.WIN_ONLY: "win",
-        DataMode.LOSS_ONLY: "lose"
-    }[rebuild_mode]
+    suffix = data2str(rebuild_mode)
     return out_dir + out_name_prefix + '_' + suffix + '.tsv'
 
 

@@ -2,7 +2,10 @@
 # coding=utf-8
 
 import tensorflow as tf
-import python.util as util
+
+from python.util import (
+    BATCH_SIZE, ALPHA, BETA, SMALL_VALUE
+)
 
 _L2_NORM = 0.001
 _GRAD_CLIP = 5.0
@@ -30,11 +33,11 @@ def _clip_values(x):
 def cost(y_true, y_pred, tvars):
     lossL2 = tf.add_n([tf.nn.l2_loss(v) for v in tvars]) * _L2_NORM
     ce = cross_entropy(y_true, y_pred)
-    return tf.add(ce, lossL2) / util.BATCH_SIZE
+    return tf.add(ce, lossL2) / BATCH_SIZE
 
 
 def loss1(y_true, y_pred):
-    return -tf.reduce_sum(tf.math.log(tf.add(y_pred, util.SMALL_VALUE))) / util.BATCH_SIZE
+    return -tf.reduce_sum(tf.math.log(tf.add(y_pred, SMALL_VALUE))) / BATCH_SIZE
 
 # @tf.function
 # def loss1(target, prediction):
@@ -58,7 +61,7 @@ def loss1(y_true, y_pred):
 
 
 def common_loss(l1, l2):
-    return l1 * util.BETA + l2 * util.ALPHA
+    return l1 * ALPHA + l2 * BETA
 
 
 def loss_grad(tape, tvar, target, pred, loss_function):
