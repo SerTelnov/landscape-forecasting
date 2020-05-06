@@ -23,7 +23,7 @@ def cross_entropy(y_true, y_pred):
     final_survival_rate = _clip_values(final_survival_rate)
     final_dead_rate = _clip_values(final_dead_rate)
 
-    return -tf.reduce_mean(w_ * tf.math.log(final_survival_rate) + w * tf.math.log(final_dead_rate))
+    return -tf.reduce_mean(w * tf.math.log(final_survival_rate) + w_ * tf.math.log(final_dead_rate))
 
 
 def _clip_values(x):
