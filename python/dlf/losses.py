@@ -2,9 +2,10 @@
 # coding=utf-8
 
 import tensorflow as tf
+import tensorflow.keras.backend as K
 
 from python.util import (
-    BATCH_SIZE, ALPHA, BETA, SMALL_VALUE
+    BATCH_SIZE, ALPHA, BETA
 )
 
 _L2_NORM = 0.001
@@ -37,7 +38,7 @@ def cost(y_true, y_pred, tvars):
 
 
 def loss1(y_true, y_pred):
-    return -tf.reduce_sum(tf.math.log(tf.add(y_pred, SMALL_VALUE))) / BATCH_SIZE
+    return -tf.reduce_sum(tf.math.log(tf.add(y_pred, K.epsilon()))) / BATCH_SIZE
 
 # @tf.function
 # def loss1(target, prediction):

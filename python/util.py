@@ -20,8 +20,6 @@ class ModelMode(Enum):
 
 SEPARATOR = '\t'
 
-SMALL_VALUE = 1e-20
-
 ALPHA = 0.25  # loss1
 BETA = 0.75  # cross entropy
 LEARNING_RATE = 0.0001

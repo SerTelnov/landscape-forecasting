@@ -13,10 +13,9 @@ class AttentionRNNLayer(layers.Layer):
         super(AttentionRNNLayer, self).__init__()
         self.units = units
         self.rnn = layers.RNN(
-            layers.LSTMCell(310),
+            layers.LSTMCell(units),
             return_sequences=True
         )
-        # self.attention = layers.Attention()
         self.attention = AttentionWithContext()
         self.dense = layers.Dense(
             units=1,
@@ -34,7 +33,7 @@ class AttentionRNNLayer(layers.Layer):
     def call(self, inputs, **kwargs):
         x = self.rnn(inputs)
         x = self.attention(x)
-        # x = self.dense(x)
-        # x = self.reshape(x)
+        x = self.dense(x)
+        x = self.reshape(x)
         x = tf.keras.activations.sigmoid(x)
         return x
