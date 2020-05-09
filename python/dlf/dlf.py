@@ -8,7 +8,7 @@ from python.dlf.bid_embedding import BidEmbeddingLayer
 from python.dlf.bid_prefix import BidPrefix
 from python.dlf.bid_reshaper import BidReshape
 from python.dlf.bid_rnn import BidRNNLayer
-from python.dlf.attention_rnn import AttentionRNNLayer
+from python.dlf.attention_rnn import AttentionRNN
 from python.util import LossMode, ModelMode
 
 
@@ -27,7 +27,7 @@ class DLF(models.Model):
         if model_mode == ModelMode.DLF:
             self.rnn = BidRNNLayer(self._STATE_SIZE)
         elif model_mode == ModelMode.DLF_ATTENTION:
-            self.rnn = AttentionRNNLayer(self._STATE_SIZE)
+            self.rnn = AttentionRNN(self._STATE_SIZE)
         else:
             raise Exception('Invalid model mode %s' % model_mode)
 

@@ -34,11 +34,24 @@ class AttentionWithContext(Layer):
     def build(self, input_shape):
         assert len(input_shape) == 3
 
-        self.W = self.add_weight(shape=(input_shape[-1], input_shape[-1],))
+        self.W = self.add_weight(
+            name='{}_W'.format(self.name),
+            shape=(input_shape[-1], input_shape[-1],),
+            trainable=True
+        )
         if self.bias:
-            self.b = self.add_weight(shape=(input_shape[-1],), initializer='zero')
+            self.b = self.add_weight(
+                name='{}_b'.format(self.name),
+                shape=(input_shape[-1],),
+                initializer='zero',
+                trainable=True
+            )
 
-        self.u = self.add_weight(shape=(input_shape[-1],))
+        self.u = self.add_weight(
+            name='{}_u'.format(self.name),
+            shape=(input_shape[-1],),
+            trainable=True
+        )
 
         super(AttentionWithContext, self).build(input_shape)
 

@@ -7,11 +7,10 @@ import tensorflow.keras.layers as layers
 from python.dlf.attention_layer import AttentionWithContext
 
 
-class AttentionRNNLayer(layers.Layer):
+class AttentionRNN(layers.Layer):
 
     def __init__(self, units):
-        super(AttentionRNNLayer, self).__init__()
-        self.units = units
+        super(AttentionRNN, self).__init__()
         self.rnn = layers.RNN(
             layers.LSTMCell(units),
             return_sequences=True
@@ -19,15 +18,12 @@ class AttentionRNNLayer(layers.Layer):
         self.attention = AttentionWithContext()
         self.dense = layers.Dense(
             units=1,
-            input_shape=(-1, units, 1),
-            activation='softmax'
+            input_shape=(-1, units, 1)
         )
-        self.bid_sequence = None
         self.reshape = None
 
     def build(self, input_shape):
-        self.bid_sequence = input_shape[1]
-        self.reshape = layers.Reshape((self.bid_sequence,))
+        self.reshape = layers.Reshape((input_shape[1],))
         self.built = True
 
     def call(self, inputs, **kwargs):
