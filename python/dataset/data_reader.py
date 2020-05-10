@@ -4,6 +4,7 @@
 import math
 import random
 import time
+from itertools import islice
 
 import numpy as np
 
@@ -21,18 +22,9 @@ class SparseData:
 
         with open(file_path, 'r') as fi:
             for line in fi:
-                features = list(map(int, line.split(SEPARATOR)))
-                market_price = features[0]
-                bid_price = features[1]
-                label = None
-
-                if bid_price <= market_price:
-                    if data_mode != DataMode.WIN_ONLY:
-                        label = 1.
-                elif data_mode != DataMode.LOSS_ONLY:
-                    label = 0.
-
-                if label is not None:
+                sample = SparseData.parse_line(line, data_mode)
+                if sample is not None:
+                    features, label = sample
                     self.features.append(features[2:])
                     self.bids.append(features[:2])
                     self.labels.append(label)
@@ -45,6 +37,23 @@ class SparseData:
         self.indices = np.arange(self.size)
         self.shuffle_indices()
         self.batch_pointer = 0
+
+    @staticmethod
+    def parse_line(line, data_mode):
+        features = list(map(int, line.split(SEPARATOR)))
+        market_price = features[0]
+        bid_price = features[1]
+        label = None
+
+        if bid_price <= market_price:
+            if data_mode != DataMode.WIN_ONLY:
+                label = 1.
+        elif data_mode != DataMode.LOSS_ONLY:
+            label = 0.
+
+        if label is None:
+            return None
+        return features, label
 
     def reshuffle(self):
         self.batch_pointer = 0
@@ -154,8 +163,58 @@ class BiSparseData:
             self.loseData.reshuffle()
 
 
-def read_dataset(path, campaign, data_mode=DataMode.ALL_DATA, is_train=True):
-    data_name = data2str(data_mode)
+def _get_dataset_name(path, campaign, is_train):
+    data_name = 'all'
     dataset_option = 'train' if is_train else 'test'
-    path = '%s/%s/%s_%s.tsv' % (path, campaign, dataset_option, data_name)
-    return BiSparseData(path, BATCH_SIZE, data_mode, is_train)
+    return '%s/%s/%s_%s.tsv' % (path, campaign, dataset_option, data_name)
+
+
+def read_dataset(path, campaign, data_mode=DataMode.ALL_DATA, is_train=True):
+    dataset_path = _get_dataset_name(path, campaign, is_train)
+    return BiSparseData(dataset_path, BATCH_SIZE, data_mode, is_train)
+
+
+def _lazy_next(path, campaign, data_mode, is_train):
+    dataset_path = _get_dataset_name(path, campaign, is_train)
+    with open(dataset_path, 'r') as input:
+        while True:
+            batch_features, batch_bids, batch_labels = [], [], []
+            while len(batch_labels) < BATCH_SIZE:
+                line = input.readline()
+                sample = SparseData.parse_line(line, data_mode)
+                if sample is not None:
+                    features, label = sample
+                    batch_features.append(features[2:])
+                    batch_bids.append(features[:2])
+                    batch_labels.append(label)
+
+            a, b, c = list(map(np.array, [batch_features, batch_bids, batch_labels]))
+            yield [a, b, c, label == 0.]
+
+
+def _take(n, iterable):
+    return list(islice(iterable, n))
+
+
+def read_first_n(n, path, campaign, data_mode=DataMode.ALL_DATA, is_train=False):
+    return _take(n, _lazy_next(path, campaign, data_mode, is_train))
+
+
+def balance_read_n(n, path, campaign, is_train=False):
+    k, m = n // 2, n - (n // 2)
+
+    win_samples = _take(k, _lazy_next(path, campaign, DataMode.WIN_ONLY, is_train))
+    loss_samples = _take(m, _lazy_next(path, campaign, DataMode.LOSS_ONLY, is_train))
+
+    samples = []
+
+    for x in win_samples:
+        samples.append(x)
+    for x in loss_samples:
+        samples.append(x)
+
+    return samples
+
+
+def read_first(path, campaign, data_mode=DataMode.ALL_DATA, is_train=False):
+    return _take(1, _lazy_next(path, campaign, data_mode, is_train))[0]
