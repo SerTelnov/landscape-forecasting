@@ -10,6 +10,7 @@ from python.dataset.data_reader import read_dataset
 from python.dataset.logger import Logger
 from python.dataset.stat_holder import StatHolder
 from python.dlf.dlf import DLF
+from python.model_util import make_model
 from python.dlf.losses import (
     cross_entropy, loss1, grad_common_loss, loss_grad
 )
@@ -95,8 +96,7 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
     # train_dataset = read_dataset('../data', str(campaign), data_mode)
     # test_dataset = read_dataset('../data', str(campaign), data_mode, is_train=False)
 
-    model = DLF(model_mode)
-    model.build(input_shape=([BATCH_SIZE, 16], [BATCH_SIZE, 2]))
+    model = make_model(model_mode)
     # model.run_eagerly = True
 
     steps = train_dataset.epoch_steps()
