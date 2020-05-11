@@ -35,7 +35,7 @@ class StatHolder:
     def flush(self, step):
         mean_anlp = StatHolder._mean_value(self.anlp_loss)
         mean_loss = StatHolder._mean_value(self.cross_entropy)
-        mean_auc = roc_auc_score(self.auc_label, self.auc_prob)
+        mean_auc = self.calc_roc_auc_score(self.auc_label, self.auc_prob)
 
         self.logger.log(self.category, step, mean_loss, mean_anlp, mean_auc)
 

@@ -1,21 +1,20 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-import time
 import os
+import time
 
 import tensorflow as tf
 
 from python.dataset.data_reader import read_dataset
 from python.dataset.logger import Logger
 from python.dataset.stat_holder import StatHolder
-from python.dlf.dlf import DLF
-from python.model_util import make_model
 from python.dlf.losses import (
     cross_entropy, loss1, grad_common_loss, loss_grad
 )
+from python.model_util import make_model
 from python.util import (
-    LossMode, DataMode, ModelMode, LEARNING_RATE, BATCH_SIZE, NUMBER_OF_EPOCH
+    LossMode, DataMode, ModelMode, LEARNING_RATE, NUMBER_OF_EPOCH
 )
 
 _TRAIN_STEP = 21010
