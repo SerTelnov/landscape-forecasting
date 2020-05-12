@@ -8,3 +8,9 @@ output/
 
 # jupyter out
 .ipynb_checkpoints/
+
+# latex plugin out
+*.aux
+*.fdb_latexmk
+*.log
+*.fls
