@@ -9,10 +9,9 @@ from python.util import LossMode
 
 class BidPrefix(layers.Layer):
 
-    def __init__(self, seq_len, bid_info_size, loss_mode):
+    def __init__(self, seq_len, loss_mode):
         super(BidPrefix, self).__init__()
         self.seq_len = seq_len
-        self.bid_info_size = bid_info_size
 
         if loss_mode == LossMode.ALL_LOSS:
             self.prod_fn = self._prod_prefix
@@ -25,7 +24,9 @@ class BidPrefix(layers.Layer):
             self.splitter = lambda x: tf.reshape(x, shape=(-1, 1))
 
     def call(self, inputs, **kwargs):
-        x = tf.map_fn(self.prod_fn, elems=inputs)
+        bid_info, x = inputs
+        x = tf.concat([x, tf.cast(bid_info, dtype=tf.float32)], axis=1)
+        x = tf.map_fn(self.prod_fn, elems=x)
         x = self.splitter(x)
         return x
 

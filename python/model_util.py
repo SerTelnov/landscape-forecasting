@@ -10,8 +10,8 @@ def read_checkpoint(model_name):
     return tf.train.latest_checkpoint(checkpoint_dir)
 
 
-def make_model(model_mode, checkpoint_model=None):
-    dlf = DLF(model_mode)
+def make_model(model_mode, checkpoint_model=None, training_mode=True):
+    dlf = DLF(model_mode, training_mode=training_mode)
     dlf.build(input_shape=([-1, 16], [-1, 2]))
 
     if checkpoint_model is not None:
