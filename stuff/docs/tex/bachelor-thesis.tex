@@ -512,9 +512,9 @@ ANLP (average negative log probability) среди всех известных �
 
 \begin{equation}
     \begin{split}
-        W(b) & = Pr(z < b) = \sum_{j<l} Pr(z \in V_j) \\
-        S(b) & = Pr(z \geq b) = \sum_{j \geq l} Pr(z \in V_j) \\
-        p(b) & = Pr(z \in V_l) =  W(b_{l + 1}) - W(b_l) = S(b_l) - S(b_{l + 1})
+        W(b_l) & = Pr(z < b_l) = \sum_{j<l} Pr(z \in V_j) \\
+        S(b_l) & = Pr(z \geq b_l) = \sum_{j \geq l} Pr(z \in V_j) \\
+        p(b_l) & = Pr(z \in V_l) =  W(b_{l + 1}) - W(b_l) = S(b_l) - S(b_{l + 1})
     \end{split}
 \end{equation}
 
@@ -538,17 +538,17 @@ $f_{\Theta}$ – функция рекуррентной нейронной се
 Формула условной вероятности для $x^i$ и блока $l$. $r_{l-1}$ – скрытый вектор из предыдущего рекуррентного блока.
 
 \begin{equation}
-    h_l^i = Pr⁡(z \in V_l \mid z \geq b_{l-1}, x^i; \Theta)= f_{\Theta} (x^i,b_l \mid r_{l-1})
+    h_l^i = Pr⁡(z \in V_l \mid z \geq b_{l-1}, x^i; \Theta)= f_{\Theta} (x^i, b_l \mid r_{l-1})
 \end{equation}
 
 Вероятность проигрыша и выигрыша в аукционе для примера $x^i$, со ставкой $b_l$ будет равны:
 
 \begin{equation}\label{eq:nnS}
     \begin{split}
-        S(b_l \mid x^i; \Theta) & = Pr(b_l \leq z \mid x^i; \Theta) = Pr(z \notin V_1, z \notin V_2, ..., z \notin V_l \mid x^i; \Theta) \\
-        & = Pr(z \notin V_1 \mid x^i; \Theta) \cdot Pr(z \notin V_2 \mid x^i; z \notin V_1 \Theta) ... \\
+        S(b_l \mid x^i; \Theta) & = Pr(z \geq b_l \mid x^i; \Theta) = Pr(z \notin V_1, z \notin V_2, ..., z \notin V_l \mid x^i; \Theta) \\
+        & = Pr(z \notin V_1 \mid x^i; \Theta) \cdot Pr(z \notin V_2 \mid z \notin V_1, x^i; \Theta) ... \\
         & \cdot Pr(z \notin V_l \mid z \notin V_1, ..., z \notin V_{l - 1},  x^i; \Theta) \\
-        & = \prod_{l_i : l_i \leq l} \left[1 - Pr(z \in V_l \mid z \geq b_l, x^i; \Theta)\right] = \prod_{l_i: l_i \leq l} (1 - h_l^i)
+        & = \prod_{l_j : l_j \leq l} \left[1 - Pr(z \in V_{l_j} \mid z \geq b_{l_j}, x^i; \Theta)\right] = \prod_{l_j: l_j \leq l} (1 - h_{l_j}^i)
     \end{split}
 \end{equation}
 
@@ -648,7 +648,9 @@ Dense слой уменьшает размерность примеров, дл�
 \begin{equation}
     \begin{split}
         L_2 & = L_{win} + L_{lose} \\
-        & = - \log \prod_{(x^i, z^i) \in D_{win}} {[W(b^i \mid x^i; \Theta)]}^{w^i} \cdot {\left[1 - W(b^i \mid x^i; \Theta)\right]}^{1 - w^i}
+        & = - log \prod_{(x^i, b^i) \in D_{win}} Pr(b^i > z \mid x^i; \Theta) - log \prod_{(x^i, b^i) \in D_{lose}} Pr(z \geq b^i \mid x^i; \Theta) \\
+        & = - \log \prod_{(x^i, z^i) \in D} {[W(b^i \mid x^i; \Theta)]}^{w^i} \cdot {\left[1 - W(b^i \mid x^i; \Theta)\right]}^{1 - w^i} \\
+        & = - \sum_{(x^i, b^i) \in D} \left[w^i \log W(b^i \mid x^i; \Theta) + (1 - w^i) log (1 - W(b^i \mid x^i; \Theta)) \right]
     \end{split}
 \end{equation}
 
