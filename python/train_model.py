@@ -93,11 +93,11 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
 
     optimizer = tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE, beta_2=_BETA_2)
 
-    train_dataset = read_dataset('../data', 'toy_datasets', data_mode)
-    test_dataset = read_dataset('../data', 'toy_datasets', data_mode, is_train=False)
+    # train_dataset = read_dataset('../data', 'toy_datasets', data_mode)
+    # test_dataset = read_dataset('../data', 'toy_datasets', data_mode, is_train=False)
 
-    # train_dataset = read_dataset('../data', str(campaign), data_mode)
-    # test_dataset = read_dataset('../data', str(campaign), data_mode, is_train=False)
+    train_dataset = read_dataset('data', str(campaign), data_mode)
+    test_dataset = read_dataset('data', str(campaign), data_mode, is_train=False)
 
     model = make_model(model_mode)
     early_stopping = EarlyStopping(model, optimizer, logger.model_name)
@@ -192,7 +192,7 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
 
 
 def main():
-    train_model(2997, model_mode=ModelMode.DLF)
+    train_model(3476, model_mode=ModelMode.TRANSFORMER)
 
 
 if __name__ == '__main__':
