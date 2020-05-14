@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-import tensorflow as tf
 import tensorflow.keras.models as models
 
 from python.dlf.bid_embedding import BidEmbeddingLayer
-from python.dlf.bid_prefix import BidPrefix
+from python.common.bid_prefix import BidPrefix
 from python.dlf.bid_reshaper import BidReshape
 from python.dlf.bid_rnn import BidRNNLayer
 from python.dlf.attention_rnn import AttentionRNN

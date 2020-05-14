@@ -2,6 +2,8 @@ import tensorflow as tf
 import os
 
 from python.dlf.dlf import DLF
+from python.tlf.tlf import TransformerForecasting
+from python.util import ModelMode
 
 
 def read_checkpoint(model_name):
@@ -11,11 +13,17 @@ def read_checkpoint(model_name):
 
 
 def make_model(model_mode, checkpoint_model=None, training_mode=True):
-    dlf = DLF(model_mode, training_mode=training_mode)
-    dlf.build(input_shape=([-1, 16], [-1, 2]))
+    if model_mode in [ModelMode.DLF, ModelMode.DLF_ATTENTION]:
+        model = DLF(model_mode, training_mode=training_mode)
+    elif model_mode == ModelMode.TRANSFORMER:
+        model = TransformerForecasting(training_mode)
+    else:
+        raise Exception("invalid model %ds" % model_mode)
+
+    model.build(input_shape=([-1, 16], [-1, 2]))
 
     if checkpoint_model is not None:
         latest = read_checkpoint(checkpoint_model)
-        dlf.load_weights(latest)
+        model.load_weights(latest)
 
-    return dlf
+    return model

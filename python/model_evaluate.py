@@ -5,8 +5,6 @@ import tensorflow as tf
 from python.dlf.dlf import DLF
 from python.util import BATCH_SIZE
 from python.dataset.data_reader import read_dataset
-from python.dlf.losses import cross_entropy
-
 
 checkpoint_path = '../output/checkpoint/aws/dlf_2997_all__0.25_0.75_0.0001_20200502_1437/cp-{epoch:02d}.ckpt'
 checkpoint_dir = os.path.dirname(checkpoint_path)

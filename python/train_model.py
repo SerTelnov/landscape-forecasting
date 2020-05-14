@@ -9,7 +9,7 @@ import tensorflow as tf
 from python.dataset.data_reader import read_dataset
 from python.dataset.logger import Logger
 from python.dataset.stat_holder import StatHolder
-from python.dlf.losses import (
+from python.common.losses import (
     cross_entropy, loss1, grad_common_loss, loss_grad
 )
 from python.model_util import make_model
@@ -151,8 +151,8 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
             )
 
             print("Prev step %s worked %s sec" % (step_number, '{:.4f}'.format(time.time() - start_time)))
-            # if step_number > 0 and step_number % 10 == 0:
-            #     stat_holder_train.flush(step_number)
+            if step_number > 0 and step_number % 10 == 0:
+                stat_holder_train.flush(step_number)
 
             if 100 <= step_number < 500:
                 if step_number % 100 == 0:
@@ -177,7 +177,7 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
 
 
 def main():
-    train_model(2997, model_mode=ModelMode.DLF_ATTENTION)
+    train_model(2997, model_mode=ModelMode.TRANSFORMER)
 
 
 if __name__ == '__main__':

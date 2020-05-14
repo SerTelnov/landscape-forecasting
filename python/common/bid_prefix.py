@@ -9,7 +9,7 @@ from python.util import LossMode
 
 class BidPrefix(layers.Layer):
 
-    def __init__(self, seq_len, loss_mode):
+    def __init__(self, seq_len, loss_mode=LossMode.ALL_LOSS):
         super(BidPrefix, self).__init__()
         self.seq_len = seq_len
 

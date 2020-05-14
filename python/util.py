@@ -15,7 +15,8 @@ class DataMode(Enum):
 
 class ModelMode(Enum):
     DLF = 1,
-    DLF_ATTENTION = 2
+    DLF_ATTENTION = 2,
+    TRANSFORMER = 3
 
 
 SEPARATOR = '\t'
@@ -46,5 +47,6 @@ def data2str(data_mode: DataMode):
 def model2str(model_mode: ModelMode):
     return {
         ModelMode.DLF: 'dlf',
-        ModelMode.DLF_ATTENTION: 'dlf_attention'
+        ModelMode.DLF_ATTENTION: 'dlf_attention',
+        ModelMode.TRANSFORMER: 'tlf'
     }[model_mode]
