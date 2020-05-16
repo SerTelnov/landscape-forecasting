@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+import pandas as pd
 import numpy as np
 import random
 from python.util import (
@@ -85,6 +86,54 @@ def _make_out_path(out_dir, out_name_prefix, rebuild_mode):
     return out_dir + out_name_prefix + '_' + suffix + '.tsv'
 
 
+class SocialNetDatasetRebuilder:
+
+    def __init__(self, dataset_path, dataset_name):
+        self._global_label = None
+        self._dataset_path = dataset_path
+        self._dataset_name = dataset_name
+
+        self._global_counter = 0
+        self._global_feature_map = {}
+
+    def rebuild(self, new_filename):
+        features_index_path = self._dataset_path + 'featindex.tsv'
+        new_dataset_path = self._dataset_path + new_filename + '.tsv'
+        path = self._dataset_path + self._dataset_name
+
+        df = pd.read_csv(path).drop(['time'], axis=1)
+        df = df[df.bid.between(10, 300)]
+
+        labels = list(df)
+        labels[0] = 'market_price'
+        labels[1] = 'bid'
+
+        df = df[labels]
+
+        for label in labels[3:]:
+            self._global_feature_map[label] = {}
+            self._global_label = label
+            df[label] = df[label].map(self._count_feature)
+
+        with open(features_index_path, 'w') as feat_out:
+            feat_out.write(SEPARATOR.join(['feature name', 'value', 'number']) + '\n')
+
+            for label in labels[3:]:
+                for value, num in self._global_feature_map[label].items():
+                    line = SEPARATOR.join(map(str, [label, value, num]))
+                    feat_out.write(line + '\n')
+
+        df.to_csv(new_dataset_path, sep=SEPARATOR, header=False, index=False)
+
+    def _count_feature(self, x):
+        feature_map = self._global_feature_map[self._global_label]
+        x = str(x)
+
+        if x not in feature_map:
+            self._global_counter += 1
+            feature_map[x] = self._global_counter
+        return feature_map[x]
+
 # decrease_dataset(
 #     dataset_path='../../data/3476/',
 #     dataset_name='test.yzbx.txt',
@@ -105,3 +154,8 @@ def _make_out_path(out_dir, out_name_prefix, rebuild_mode):
 #     size=2048,
 #     data_mode=DataMode.ALL_DATA
 # )
+
+SocialNetDatasetRebuilder(
+    dataset_path='../../data/vk1/1/',
+    dataset_name='ad_1_train.csv'
+).rebuild('train_all')
