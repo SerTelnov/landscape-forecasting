@@ -101,7 +101,7 @@ class SocialNetDatasetRebuilder:
         new_dataset_path = self._dataset_path + new_filename + '.tsv'
         path = self._dataset_path + self._dataset_name
 
-        df = pd.read_csv(path).drop(['time'], axis=1)
+        df = pd.read_csv(path).drop(['time', 'label'], axis=1)
         df = df[df.bid.between(10, 300)]
 
         labels = list(df)
@@ -110,15 +110,15 @@ class SocialNetDatasetRebuilder:
 
         df = df[labels]
 
-        for label in labels[3:]:
+        for label in labels[2:]:
             self._global_feature_map[label] = {}
             self._global_label = label
             df[label] = df[label].map(self._count_feature)
 
         with open(features_index_path, 'w') as feat_out:
-            feat_out.write(SEPARATOR.join(['feature name', 'value', 'number']) + '\n')
+            feat_out.write(SEPARATOR.join(['feature', 'value', 'number']) + '\n')
 
-            for label in labels[3:]:
+            for label in labels[2:]:
                 for value, num in self._global_feature_map[label].items():
                     line = SEPARATOR.join(map(str, [label, value, num]))
                     feat_out.write(line + '\n')
@@ -155,7 +155,12 @@ class SocialNetDatasetRebuilder:
 #     data_mode=DataMode.ALL_DATA
 # )
 
-SocialNetDatasetRebuilder(
-    dataset_path='../../data/vk1/1/',
-    dataset_name='ad_1_train.csv'
-).rebuild('train_all')
+def main():
+    SocialNetDatasetRebuilder(
+        dataset_path='../../data/vk1/',
+        dataset_name='ad_1_test.csv'
+    ).rebuild('test_all')
+
+
+if __name__ == '__main__':
+    main()
