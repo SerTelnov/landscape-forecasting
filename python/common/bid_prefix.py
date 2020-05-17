@@ -37,9 +37,12 @@ class BidPrefix(layers.Layer):
 
         survival_rate = tf.reduce_prod(x[0:bid])
 
-        rate_last_one = tf.reduce_prod(x[0:market_price + 1])
-        rate_last_two = tf.reduce_prod(x[0:market_price])
-        rate_last = rate_last_two - rate_last_one
+        if market_price != 0:
+            rate_last_one = tf.reduce_prod(x[0:market_price + 1])
+            rate_last_two = tf.reduce_prod(x[0:market_price])
+            rate_last = rate_last_two - rate_last_one
+        else:
+            rate_last = tf.keras.backend.epsilon()
 
         return tf.stack([survival_rate, rate_last])
 
