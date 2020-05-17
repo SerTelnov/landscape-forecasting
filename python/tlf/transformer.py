@@ -12,11 +12,12 @@ from python.tlf.final_layer import FinalLayer
 
 
 class TransformerForecasting(models.Model):
+
     _MAX_SEQ_LEN = 310
     _NUM_LAYERS = 2
-    _MODELS = 128
+    _MODELS = 32
     _NUM_HEADS = 8
-    _DFF = 2048
+    _DFF = 512
 
     def __init__(self, training_mode=True, *args, **kwargs):
         super(TransformerForecasting, self).__init__(*args, **kwargs)

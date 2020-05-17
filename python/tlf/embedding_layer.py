@@ -8,6 +8,7 @@ import tensorflow.keras.layers as layers
 
 class EmbeddingLayer(layers.Layer):
     _MAX_DEN = 580_000
+    _EMB_DIM = 32
 
     def __init__(self, models, features_number, seq_len):
         super(EmbeddingLayer, self).__init__()
@@ -16,17 +17,27 @@ class EmbeddingLayer(layers.Layer):
         self.embedding_layer = layers.Embedding(
             input_length=features_number,
             input_dim=self._MAX_DEN,
-            output_dim=self.models
+            output_dim=self._EMB_DIM
         )
-        self.middle_layer = layers.Dense(seq_len)
+
+        self.reshape = layers.Reshape(target_shape=(self._EMB_DIM * features_number,))
+        self.middle_layer = layers.Dense(self.models - 1)
+
+        self.bid_reshape = layers.Reshape((seq_len, self.models - 1))
+        self.bids = tf.reshape(tf.range(seq_len, dtype=tf.float32), shape=(seq_len, 1))
         self.pos_encoding = self.positional_encoding(seq_len, models)
 
     def call(self, input, **kwargs):
         x = self.embedding_layer(input)
         x *= tf.math.sqrt(tf.cast(self.models, tf.float32))
-        x = tf.transpose(x, perm=[0, 2, 1])
+
+        x = self.reshape(x)
         x = self.middle_layer(x)
-        x = tf.transpose(x, perm=[0, 2, 1])
+
+        x = tf.map_fn(lambda i: tf.tile(i, [self.seq_len]), x)
+        x = self.bid_reshape(x)
+        x = tf.map_fn(lambda i: tf.concat([i, self.bids], axis=1), x)
+
         x += self.pos_encoding[:, :self.seq_len, :]
         return x
 

@@ -96,7 +96,7 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
     # test_dataset = read_dataset('../data', str(campaign), data_mode, is_train=False)
 
     model = make_model(model_mode)
-    model.run_eagerly = True
+    # model.run_eagerly = True
 
     steps = train_dataset.epoch_steps()
 
@@ -177,7 +177,7 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
 
 
 def main():
-    train_model('vk1', model_mode=ModelMode.TRANSFORMER)
+    train_model(3476, model_mode=ModelMode.TRANSFORMER)
 
 
 if __name__ == '__main__':

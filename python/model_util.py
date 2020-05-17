@@ -2,7 +2,7 @@ import tensorflow as tf
 import os
 
 from python.dlf.dlf import DLF
-from python.tlf.tlf import TransformerForecasting
+from python.tlf.transformer import TransformerForecasting
 from python.util import ModelMode
 
 
@@ -20,7 +20,7 @@ def make_model(model_mode, checkpoint_model=None, training_mode=True):
     else:
         raise Exception("invalid model %ds" % model_mode)
 
-    model.build(input_shape=([-1, 14], [-1, 2]))
+    model.build(input_shape=([-1, 16], [-1, 2]))
 
     if checkpoint_model is not None:
         latest = read_checkpoint(checkpoint_model)
