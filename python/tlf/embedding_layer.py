@@ -24,7 +24,7 @@ class EmbeddingLayer(layers.Layer):
         self.middle_layer = layers.Dense(self.models - 1)
 
         self.bid_reshape = layers.Reshape((seq_len, self.models - 1))
-        self.bids = tf.reshape(tf.range(seq_len, dtype=tf.float32), shape=(seq_len, 1))
+        # self.bids = tf.reshape(tf.range(seq_len, dtype=tf.float32), shape=(seq_len, 1))
         self.pos_encoding = self.positional_encoding(seq_len, models)
 
     def call(self, input, **kwargs):
@@ -36,7 +36,7 @@ class EmbeddingLayer(layers.Layer):
 
         x = tf.map_fn(lambda i: tf.tile(i, [self.seq_len]), x)
         x = self.bid_reshape(x)
-        x = tf.map_fn(lambda i: tf.concat([i, self.bids], axis=1), x)
+        # x = tf.map_fn(lambda i: tf.concat([i, self.bids], axis=1), x)
 
         x += self.pos_encoding[:, :self.seq_len, :]
         return x

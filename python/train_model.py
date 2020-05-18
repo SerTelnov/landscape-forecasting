@@ -113,7 +113,7 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
 
         for step in range(steps):
             current_features, current_bids, current_target, is_win = train_dataset.next()
-            start_time = time.time()
+            # start_time = time.time()
 
             with tf.GradientTape() as tape:
                 tape.watch(model.trainable_variables)
@@ -160,7 +160,7 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
                 prediction=[survival_rate, rate_last]
             )
 
-            print("Prev step %s worked %s sec" % (step_number, '{:.4f}'.format(time.time() - start_time)))
+            # print("Prev step %s worked %s sec" % (step_number, '{:.4f}'.format(time.time() - start_time)))
 
             if step_number > 0 and step_number % 1000 == 0:
                 anlp, auc = run_test(model, step, test_dataset, stat_holder_test, DataMode.WIN_ONLY, test_all_data=True)
