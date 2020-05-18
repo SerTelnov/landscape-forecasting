@@ -21,9 +21,9 @@ class EmbeddingLayer(layers.Layer):
         )
 
         self.reshape = layers.Reshape(target_shape=(self._EMB_DIM * features_number,))
-        self.middle_layer = layers.Dense(self.models - 1)
+        self.middle_layer = layers.Dense(self.models)
 
-        self.bid_reshape = layers.Reshape((seq_len, self.models - 1))
+        self.bid_reshape = layers.Reshape((seq_len, self.models))
         # self.bids = tf.reshape(tf.range(seq_len, dtype=tf.float32), shape=(seq_len, 1))
         self.pos_encoding = self.positional_encoding(seq_len, models)
 
