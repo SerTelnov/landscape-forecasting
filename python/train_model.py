@@ -18,7 +18,7 @@ from python.util import (
 )
 
 _TRAIN_STEP = 21010
-_TEST_STEP = 310
+_TEST_STEP = 300
 
 _BETA_2 = 0.99
 
@@ -36,6 +36,7 @@ def run_test_win(model, step, dataset, stat_holder, test_all_data):
         survival_rate, rate_last = model.predict_on_batch([features, bids])
         cross_entropy_value = cross_entropy(targets, survival_rate)
         loss1_value = loss1(targets, rate_last)
+
         stat_holder.hold(
             step,
             cross_entropy=cross_entropy_value,
@@ -43,6 +44,7 @@ def run_test_win(model, step, dataset, stat_holder, test_all_data):
             prediction=[survival_rate, rate_last],
             anlp_loss=loss1_value
         )
+    print("Iter number %d/%d" % (steps, steps))
 
 
 def run_test_loss(model, step, dataset, stat_holder, test_all_data):
@@ -63,6 +65,8 @@ def run_test_loss(model, step, dataset, stat_holder, test_all_data):
             prediction=[survival_rate, rate_last],
             anlp_loss=None
         )
+
+    print("Iter number %d/%d" % (steps, steps))
 
 
 def run_test(model, step, dataset, stat_holder, test_all_data=False):

@@ -6,7 +6,7 @@ class FeedForward(layers.Layer):
 
     def __init__(self, models, dff, **kwargs):
         super(FeedForward, self).__init__(**kwargs)
-        self.dense1 = tf.keras.layers.Dense(dff, activation='relu')
+        self.dense1 = tf.keras.layers.Dense(dff, activation=tf.nn.relu)
         self.dense2 = tf.keras.layers.Dense(models)
 
     def call(self, inputs, **kwargs):
