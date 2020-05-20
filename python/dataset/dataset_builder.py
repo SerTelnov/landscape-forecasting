@@ -15,28 +15,26 @@ _LABELS = ["market_price", "bid", "weekday", "hour", "IP", "region", "city",
 
 
 def build_toy_dataset(dataset_path, dataset_name, size, data_mode=DataMode.ALL_DATA):
-    output_path = '../../data/toy_datasets/' + dataset_name
-    with open(dataset_path, 'r') as input, \
-            open(output_path, 'w') as output:
-        count = 0
-        while count < size:
-            line = input.readline()
-            sample = line.split(SEPARATOR)
+    input_path = dataset_path + dataset_name
+    output_path = dataset_path + 'toy_datasets_' + dataset_name
 
-            if data_mode == DataMode.ALL_DATA:
-                output.write(line)
-                count += 1
-            else:
-                market_prize = int(sample[0])
-                bid = int(sample[1])
+    df = pd.read_csv(
+        input_path,
+        sep='\t',
+        names=['market_price', 'bid', 'domain_hash', 'fb_index', 'user_age', 'user_sex', 'device_model', 'os',
+               'user_ip', 'country_id', 'city_id', 'weekday', 'hour', 'fb_section_id', 'ads_section_id',
+               'ads_platform_id']
+    )
 
-                if market_prize >= bid:
-                    if data_mode == DataMode.LOSS_ONLY:
-                        output.write(line)
-                        count += 1
-                elif data_mode == DataMode.WIN_ONLY:
-                    output.write(line)
-                    count += 1
+    if data_mode == DataMode.WIN_ONLY:
+        df = df[(df.bid >= df.market_price)]
+    elif data_mode == DataMode.LOSS_ONLY:
+        df = df[(df.bid < df.market_price) | (df.market_price == 0)]
+
+    df['bid'] = df['bid'].map(lambda x: 1 + int(random.random() * 100) % 5)
+
+    df = df.sample(n=size, random_state=1)
+    df.to_csv(output_path, sep=SEPARATOR, header=False, index=False)
 
 
 def decrease_dataset(dataset_path, dataset_name, decrease_value=100):
@@ -88,42 +86,77 @@ def _make_out_path(out_dir, out_name_prefix, rebuild_mode):
 
 class SocialNetDatasetRebuilder:
 
-    def __init__(self, dataset_path, dataset_name):
+    _LOSS_SAMPLES_COUNT = 12_000
+
+    def __init__(self, dataset_path, dataset_train, dataset_test):
         self._global_label = None
         self._dataset_path = dataset_path
-        self._dataset_name = dataset_name
+        self._dataset_train = dataset_train
+        self._dataset_test = dataset_test
 
         self._global_counter = 0
         self._global_feature_map = {}
+        self._number_counter = {}
 
-    def rebuild(self, new_filename):
+    def rebuild(self):
         features_index_path = self._dataset_path + 'featindex.tsv'
-        new_dataset_path = self._dataset_path + new_filename + '.tsv'
-        path = self._dataset_path + self._dataset_name
+        train_path = self._dataset_path + self._dataset_train
+        test_path = self._dataset_path + self._dataset_test
 
-        df = pd.read_csv(path).drop(['time', 'label'], axis=1)
-        df = df[df.bid.between(10, 300)]
+        train_df = self._read_dataset(train_path)
+        test_df = self._read_dataset(test_path)
 
-        labels = list(df)
-        labels[0] = 'market_price'
-        labels[1] = 'bid'
+        loss_df = test_df[(test_df.bid < test_df.market_price)]\
+            .sample(self._LOSS_SAMPLES_COUNT)
 
-        df = df[labels]
+        loss_df['bid'] = loss_df['bid'].map(lambda x: 1 + int(random.random() * 100) % 5)
+        loss_df['market_price'] = 0
+        loss_df['bid_block'] = loss_df['bid'].apply(self._get_bid_block)
 
-        for label in labels[2:]:
+        train_df = pd.concat([train_df, loss_df])\
+            .sort_values(by=['time'])\
+            .drop(['time'], axis=1)
+
+        test_df = test_df.drop(['time'], axis=1)
+
+        labels = list(train_df)[2:]
+
+        for label in labels:
             self._global_feature_map[label] = {}
             self._global_label = label
-            df[label] = df[label].map(self._count_feature)
+            features = pd.concat([train_df[label], test_df[label]])
+            features.sort_values()\
+                .apply(self._count_feature)
+
+            feature_map = self._global_feature_map[self._global_label]
+            train_df[label] = train_df[label].map(lambda x: feature_map[str(x)])
+            test_df[label] = test_df[label].map(lambda x: feature_map[str(x)])
 
         with open(features_index_path, 'w') as feat_out:
-            feat_out.write(SEPARATOR.join(['feature', 'value', 'number']) + '\n')
+            feat_out.write(SEPARATOR.join(['feature', 'value', 'number', 'count']) + '\n')
 
-            for label in labels[2:]:
+            for label in labels:
                 for value, num in self._global_feature_map[label].items():
-                    line = SEPARATOR.join(map(str, [label, value, num]))
+                    count = self._number_counter[num]
+                    line = SEPARATOR.join(map(str, [label, value, num, count]))
                     feat_out.write(line + '\n')
 
-        df.to_csv(new_dataset_path, sep=SEPARATOR, header=False, index=False)
+        train_df.to_csv(self._dataset_path + 'train_all.tsv', sep=SEPARATOR, header=False, index=False)
+        test_df.to_csv(self._dataset_path + 'test_all.tsv', sep=SEPARATOR, header=False, index=False)
+
+    def _read_dataset(self, path):
+        df = pd.read_csv(path).drop(['label'], axis=1)
+        df = df[(df['bid'].between(1, 305)) & (df['user_sex'].between(1, 2)) & (df.user_age < 90)]
+
+        df['bid_block'] = df['bid'].apply(self._get_bid_block)
+        df['device_model'] = df['device_model'].apply(lambda x: str(x).split(',')[0])
+        df['user_ip'] = df['user_ip'].apply(lambda x: '.'.join(x.split('.')[:3]) + '.*')
+
+        labels = list(df)
+        labels[1] = 'market_price'
+        labels[2] = 'bid'
+
+        return df[labels]
 
     def _count_feature(self, x):
         feature_map = self._global_feature_map[self._global_label]
@@ -132,7 +165,28 @@ class SocialNetDatasetRebuilder:
         if x not in feature_map:
             self._global_counter += 1
             feature_map[x] = self._global_counter
-        return feature_map[x]
+            self._number_counter[self._global_counter] = 0
+
+        num = feature_map[x]
+        self._number_counter[num] += 1
+        return num
+
+    @staticmethod
+    def _get_bid_block(bid):
+        if 1 <= bid <= 10:
+            return '1-10'
+        elif 11 <= bid <= 50:
+            return '11-50'
+        elif 51 <= bid <= 100:
+            return '51-100'
+        elif 101 <= bid <= 150:
+            return '101-150'
+        elif 151 <= bid <= 200:
+            return '151-200'
+        elif 201 <= bid <= 300:
+            return '201-300'
+        else:
+            return '300+'
 
 # decrease_dataset(
 #     dataset_path='../../data/3476/',
@@ -148,18 +202,12 @@ class SocialNetDatasetRebuilder:
 # )
 
 
-# build_toy_dataset(
-#     dataset_path='../../data/3476/test_all.tsv',
-#     dataset_name='train_all.tsv',
-#     size=2048,
-#     data_mode=DataMode.ALL_DATA
-# )
-
 def main():
     SocialNetDatasetRebuilder(
         dataset_path='../../data/vk1/',
-        dataset_name='ad_1_test.csv'
-    ).rebuild('test_all')
+        dataset_train='ad_1_train.csv',
+        dataset_test='ad_1_test.csv'
+    ).rebuild()
 
 
 if __name__ == '__main__':
