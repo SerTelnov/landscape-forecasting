@@ -3,6 +3,7 @@
 
 import numpy as np
 from sklearn.metrics import roc_auc_score
+from python.util import DataMode
 
 
 class StatHolder:
@@ -32,17 +33,25 @@ class StatHolder:
         if (step != 0 and step % 100 == 0) and self.is_train:
             self.flush(step)
 
-    def flush(self, step):
+    def flush(self, step, data_mode=DataMode.ALL_DATA):
         mean_anlp = StatHolder._mean_value(self.anlp_loss)
         mean_loss = StatHolder._mean_value(self.cross_entropy)
         mean_auc = self.calc_roc_auc_score(self.auc_label, self.auc_prob)
 
-        self.logger.log(self.category, step, mean_loss, mean_anlp, mean_auc)
+        category = self.category
+        if data_mode == DataMode.WIN_ONLY:
+            category += '_WIN'
+        elif data_mode == DataMode.LOSS_ONLY:
+            category += '_LOSS'
+
+        self.logger.log(category, step, mean_loss, mean_anlp, mean_auc)
 
         self.anlp_loss = []
         self.cross_entropy = []
         self.auc_label = []
         self.auc_prob = []
+
+        return mean_anlp, mean_auc
 
     @staticmethod
     def calc_roc_auc_score(Y_true, Y_pred):
