@@ -106,6 +106,7 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
 
     steps = train_dataset.epoch_steps()
     train_finished = False
+    step_number = 0
 
     for epoch in range(NUMBER_OF_EPOCH):
         if train_finished:
@@ -162,7 +163,7 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
 
             # print("Prev step %s worked %s sec" % (step_number, '{:.4f}'.format(time.time() - start_time)))
 
-            if step_number > 0 and step_number % 1000 == 0:
+            if step_number > 0 and step_number % 500 == 0:
                 anlp, auc = run_test(model, step, test_dataset, stat_holder_test, DataMode.WIN_ONLY, test_all_data=True)
                 train_finished = early_stopping.check(step, anlp)
 
@@ -186,9 +187,9 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
                 if step_number % 5000 == 0:
                     run_test(model, step_number, test_dataset, stat_holder_test)
 
-        if not train_finished:
+        if step_number + 1 >= steps:
             print('epoch #%d came to the end' % (epoch + 1))
-        run_test(model, (epoch + 1) * steps, test_dataset, stat_holder_test, test_all_data=True)
+        run_test(model, step_number, test_dataset, stat_holder_test, test_all_data=True)
 
 
 def main():

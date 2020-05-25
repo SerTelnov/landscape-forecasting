@@ -29,12 +29,13 @@ class EarlyStopping:
 
     def check(self, step, loss_score):
         if abs(self.previous - loss_score) < self.min_delta:
-            print("Training is over")
+            print('Training is over on step %s' % step)
+            self._save(step, loss_score)
             return True
         self.previous = loss_score
 
-        if not loss_score / self.best > 1.5:
-            print('Overfitting')
+        if loss_score / self.best > 1.25:
+            print('Overfitting!!')
             self.ckpt.restore(self.ckpt_manager.latest_checkpoint)
             print('Restore best result')
             return True
