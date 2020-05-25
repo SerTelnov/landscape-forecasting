@@ -21,11 +21,15 @@ class EarlyStopping:
             checkpoint_path = 'output/checkpoint/' + model2load
 
         self.ckpt = tf.train.Checkpoint(model=model, optimizer=optimizer)
-        self.ckpt_manager = tf.train.CheckpointManager(self.ckpt, checkpoint_path, max_to_keep=2)
+        self.ckpt_manager = tf.train.CheckpointManager(self.ckpt, checkpoint_path, max_to_keep=3)
 
         if self.ckpt_manager.latest_checkpoint:
             self.ckpt.restore(self.ckpt_manager.latest_checkpoint)
             print('Restore model %s' % model2load)
+
+    def times_up(self, step):
+        print('All steps are finished')
+        self._save(step, np.Inf)
 
     def check(self, step, loss_score):
         if abs(self.previous - loss_score) < self.min_delta:

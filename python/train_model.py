@@ -191,6 +191,9 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
             print('epoch #%d came to the end' % (epoch + 1))
         run_test(model, step_number, test_dataset, stat_holder_test, test_all_data=True)
 
+    if not train_finished:
+        early_stopping.times_up(step_number)
+
 
 def main():
     train_model(3476, model_mode=ModelMode.TRANSFORMER)
