@@ -96,13 +96,12 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
     # train_dataset = read_dataset('../data', 'toy_datasets', data_mode)
     # test_dataset = read_dataset('../data', 'toy_datasets', data_mode, is_train=False)
 
-    train_dataset = read_dataset('data', str(campaign), data_mode)
-    test_dataset = read_dataset('data', str(campaign), data_mode, is_train=False)
+    train_dataset = read_dataset('../data', str(campaign), data_mode)
+    test_dataset = read_dataset('../data', str(campaign), data_mode, is_train=False)
 
     model = make_model(model_mode)
-    early_stopping = EarlyStopping(model, optimizer, logger.model_name)
-
-    # model.run_eagerly = True
+    early_stopping = EarlyStopping(model, optimizer, logger.model_name, 'tlf_vk6_all__0.25_0.75_0.0001_20200526_0425')
+    run_test(model, 0, test_dataset, stat_holder_test, test_all_data=True)
 
     steps = train_dataset.epoch_steps()
     train_finished = False
@@ -162,6 +161,8 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
             )
 
             # print("Prev step %s worked %s sec" % (step_number, '{:.4f}'.format(time.time() - start_time)))
+            # if step_number > 0 and step_number % 10 == 0:
+            #     stat_holder_train.flush(step_number)
 
             if step_number > 0 and step_number % 500 == 0:
                 anlp, auc = run_test(model, step, test_dataset, stat_holder_test, DataMode.WIN_ONLY, test_all_data=True)
@@ -196,7 +197,7 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
 
 
 def main():
-    train_model(3476, model_mode=ModelMode.TRANSFORMER)
+    train_model('vk6', model_mode=ModelMode.TRANSFORMER)
 
 
 if __name__ == '__main__':

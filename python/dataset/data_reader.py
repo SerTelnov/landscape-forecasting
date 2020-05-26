@@ -45,7 +45,7 @@ class SparseData:
         bid_price = features[1]
         label = None
 
-        if bid_price <= market_price or market_price == 0:
+        if bid_price < market_price or market_price == 0:
             if data_mode != DataMode.WIN_ONLY:
                 label = 1.
         elif data_mode != DataMode.LOSS_ONLY:

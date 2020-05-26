@@ -176,19 +176,24 @@ def dataset_info(path, dirs):
         stat = []
         for mode in ['train', 'test']:
             current_path = path + curr_dir + '/' + mode + '_all.tsv'
-            df = pd.read_csv(current_path, sep=SEPARATOR, names=_LABELS_vk)
-            win_count = df[(df['bid'] >= df['market_price'])].shape[0]
-            loss_count = df[(df.bid < df.market_price) | (df.market_price == 0)].shape[0]
+            df = pd.read_csv(current_path, sep=SEPARATOR, names=_LABELS)
+            win_count = df[(df['bid'] > df['market_price'])].shape[0]
+            loss_count = df[(df.bid <= df.market_price) | (df.market_price == 0)].shape[0]
 
-            stat.append(win_count)
-            stat.append(loss_count)
+            win_rate = win_count / (win_count + loss_count)
+            win_rate = float('{:.2f}'.format(win_rate * 100))
+
+            stat.append(win_count + loss_count)
+            stat.append(win_rate)
         stat_str = ' & '.join(map(str, stat))
-        line = '%s & %s \\\\' % (i + 1, stat_str)
+        line = '%s & %s \\\\' % (curr_dir, stat_str)
         print(line)
+        print('\hline')
 
 
 def main():
-    dirs = ['vk%s' % (i + 1) for i in range(0, 12)]
+    # dirs = ['vk%s' % (i + 1) for i in range(0, 12)]
+    dirs = ['1458', '2259', '2261', '2821', '2997', '3358', '3386', '3427', '3476']
     dataset_info('../../data/', dirs)
 
     # SocialNetDatasetRebuilder(
