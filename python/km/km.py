@@ -20,6 +20,10 @@ class KM:
         self.winning_prob = None
         self.max_bid = 0
 
+    def fit_campaign(self, campaign):
+        bid_log = get_bid_log('train', campaign)
+        self.fit(bid_log)
+
     def fit(self, bid_log):
         bid_info = [{'wins': 0, 'loses': 0} for _ in range(0, 310)]
 
@@ -46,6 +50,16 @@ class KM:
                 prob_win = max(1 - prefix, 0)
                 self.winning_prob[bid] = prob_win
                 self.max_bid = max(self.max_bid, bid)
+
+    def get_distribution(self, bid_range):
+        distribution = []
+        W = []
+
+        for bid in bid_range:
+            W.append(self._win_prob(bid))
+            distribution.append(self._win_prob(bid + 1) - self._win_prob(bid))
+
+        return {'Плотность распределения': distribution, 'Вероятность выигрыша': W}
 
     def metric(self, bid_log):
         win_prediction = []
@@ -81,14 +95,15 @@ class KM:
 
     @staticmethod
     def _is_win(b, z):
-        return not (b < z or z == 0)
+        return b > z
+        # return not (b < z or z == 0)
 
 
 def get_bid_log(mode, campaign):
-    path = '../../data/'
+    path = '../data/'
 
     dataset_path = '%s%s/%s_all.tsv' % (path, campaign, mode)
-    df = pd.read_csv(dataset_path, sep=SEPARATOR, names=_LABELS_vk)
+    df = pd.read_csv(dataset_path, sep=SEPARATOR, names=_LABELS)
     df = df[['bid', 'market_price']]
 
     return df.values.tolist()
