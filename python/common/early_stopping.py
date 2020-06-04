@@ -7,7 +7,7 @@ import tensorflow as tf
 
 class EarlyStopping:
 
-    def __init__(self, model, optimizer, model_name, model2load=None, min_delta=0.01, comp=np.greater):
+    def __init__(self, model, optimizer, model_name, model2load=None, min_delta=0.0001, comp=np.greater):
         self.model = model
         self.optimizer = optimizer
         self.model_name = model_name
@@ -16,9 +16,9 @@ class EarlyStopping:
         self.previous = np.Inf
         self.comp = comp
 
-        checkpoint_path = '../output/checkpoint/' + model_name
+        checkpoint_path = 'output/checkpoint/' + model_name
         if model2load is not None:
-            checkpoint_path = '../output/checkpoint/aws/' + model2load
+            checkpoint_path = 'output/checkpoint/aws/' + model2load
 
         self.ckpt = tf.train.Checkpoint(model=model, optimizer=optimizer)
         self.ckpt_manager = tf.train.CheckpointManager(self.ckpt, checkpoint_path, max_to_keep=3)
@@ -38,7 +38,7 @@ class EarlyStopping:
             return True
         self.previous = loss_score
 
-        if loss_score / self.best > 1.25:
+        if loss_score / self.best > 1.5:
             print('Overfitting!!')
             self.ckpt.restore(self.ckpt_manager.latest_checkpoint)
             print('Restore best result')

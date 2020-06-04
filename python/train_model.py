@@ -100,8 +100,7 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
     test_dataset = read_dataset('../data', str(campaign), data_mode, is_train=False)
 
     model = make_model(model_mode)
-    early_stopping = EarlyStopping(model, optimizer, logger.model_name, 'tlf_vk6_all__0.25_0.75_0.0001_20200526_0425')
-    run_test(model, 0, test_dataset, stat_holder_test, test_all_data=True)
+    early_stopping = EarlyStopping(model, optimizer, logger.model_name)
 
     steps = train_dataset.epoch_steps()
     train_finished = False
@@ -166,7 +165,7 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
 
             if step_number > 0 and step_number % 500 == 0:
                 anlp, auc = run_test(model, step, test_dataset, stat_holder_test, DataMode.WIN_ONLY, test_all_data=True)
-                train_finished = early_stopping.check(step, anlp)
+                train_finished = early_stopping.check(step_number, anlp)
 
                 if train_finished:
                     print('Early stopping!!')

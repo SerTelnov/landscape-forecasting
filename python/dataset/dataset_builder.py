@@ -146,7 +146,7 @@ class SocialNetDatasetRebuilder:
     def _read_dataset(self, path):
         df = pd.read_csv(path).drop(['label', 'time'], axis=1)
         df = df[(df['bid'].between(1, 305)) & (df['market_price'].between(1, 305)) & (df['user_sex'].between(1, 2)) & (
-                    df.user_age < 90)]
+                df.user_age < 90)]
 
         # df['device_model'] = df['device_model'].apply(lambda x: str(x).split(',')[0])
         df['user_ip'] = df['user_ip'].apply(lambda x: '.'.join(x.split('.')[:3]) + '.*')
@@ -174,27 +174,67 @@ class SocialNetDatasetRebuilder:
 def dataset_info(path, dirs):
     for i, curr_dir in enumerate(dirs):
         stat = []
+        total = 0
+        win = 0
         for mode in ['train', 'test']:
             current_path = path + curr_dir + '/' + mode + '_all.tsv'
             df = pd.read_csv(current_path, sep=SEPARATOR, names=_LABELS)
             win_count = df[(df['bid'] > df['market_price'])].shape[0]
             loss_count = df[(df.bid <= df.market_price) | (df.market_price == 0)].shape[0]
 
-            win_rate = win_count / (win_count + loss_count)
-            win_rate = float('{:.2f}'.format(win_rate * 100))
+            stat.append(win_count)
+            stat.append(loss_count)
+            total += (win_count + loss_count)
+            win += win_count
 
-            stat.append(win_count + loss_count)
-            stat.append(win_rate)
+        win_rate = win / total
+        win_rate = float('{:.2f}'.format(win_rate * 100))
+
+        stat.append(win_rate)
         stat_str = ' & '.join(map(str, stat))
         line = '%s & %s \\\\' % (curr_dir, stat_str)
         print(line)
         print('\hline')
 
 
+class Iter:
+    counter = 0
+    step = 500
+
+    def f(self, _):
+        self.counter += self.step
+        return self.counter
+
+
+def interval_rebuilder():
+    path = '../../output/aws-results/interval/'
+    model1 = 'tlf_3476_all__0.25_0.75_0.0001_20200527_1412.tsv'
+    model2 = 'tlf_3476_all__0.25_0.75_0.0001_20200527_1416.tsv'
+    model3 = 'tlf_3476_all__0.25_0.75_0.0001_20200527_1713.tsv'
+
+    models = [model1, model2, model3]
+    for i in range(len(models)):
+        current_model_path = path + models[i]
+        df = pd.read_csv(current_model_path, sep='\t')
+
+        df_test_win = df[(df['category'] == 'TEST_WIN')]
+        df_train = df[(df['category'] != 'TEST_WIN')]
+
+        iter_f = Iter()
+
+        df_test_win['step'] = df_test_win['step'].map(iter_f.f)
+
+        new_log_path = '%smodel%s_log.tsv' % (path, i + 1)
+        pd.concat([df_train, df_test_win]) \
+            .sort_values(by=['step']) \
+            .to_csv(new_log_path, sep='\t', index=False)
+
+
 def main():
+    interval_rebuilder()
     # dirs = ['vk%s' % (i + 1) for i in range(0, 12)]
-    dirs = ['1458', '2259', '2261', '2821', '2997', '3358', '3386', '3427', '3476']
-    dataset_info('../../data/', dirs)
+    # # dirs = ['1458', '2259', '2261', '2821', '2997', '3358', '3386', '3427', '3476']
+    # dataset_info('../../data/', dirs)
 
     # SocialNetDatasetRebuilder(
     #     dataset_path='../../data/vk12/',

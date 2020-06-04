@@ -11,7 +11,7 @@ from python.util import (
 
 
 class Logger:
-    _PATH_PREFIX = '../output/'
+    _PATH_PREFIX = 'output/'
     _LABELS = ['campaign', 'category', 'step', 'cross_entropy', 'mean_anlp', 'common_loss', 'mean_auc']
 
     def __init__(self, campaign, data_mode, loss_mode=LossMode.ALL_LOSS, model_mode=ModelMode.DLF):
