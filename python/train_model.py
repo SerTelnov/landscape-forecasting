@@ -96,11 +96,11 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
     # train_dataset = read_dataset('../data', 'toy_datasets', data_mode)
     # test_dataset = read_dataset('../data', 'toy_datasets', data_mode, is_train=False)
 
-    train_dataset = read_dataset('../data', str(campaign), data_mode)
-    test_dataset = read_dataset('../data', str(campaign), data_mode, is_train=False)
+    train_dataset = read_dataset('data', str(campaign), data_mode, is_cool_start=True)
+    test_dataset = read_dataset('data', str(campaign), data_mode, is_train=False)
 
     model = make_model(model_mode)
-    early_stopping = EarlyStopping(model, optimizer, logger.model_name)
+    early_stopping = EarlyStopping(model, optimizer, logger.model_name, 'dlf_3476_all__0.25_0.75_0.0001_20200503_1108')
 
     steps = train_dataset.epoch_steps()
     train_finished = False
@@ -171,21 +171,21 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
                     print('Early stopping!!')
                     break
 
-            if 100 <= step_number < 500:
-                if step_number % 100 == 0:
-                    run_test(model, step_number, test_dataset, stat_holder_test)
-            elif 500 <= step_number < 2000:
-                if step_number % 500 == 0:
-                    run_test(model, step_number, test_dataset, stat_holder_test)
-            elif 2000 <= step_number < 10000:
-                if step_number % 2000 == 0:
-                    run_test(model, step_number, test_dataset, stat_holder_test)
-            elif 10000 <= step_number < 21000:
-                if step_number % 3000 == 0:
-                    run_test(model, step_number, test_dataset, stat_holder_test)
-            elif 21000 < step_number:
-                if step_number % 5000 == 0:
-                    run_test(model, step_number, test_dataset, stat_holder_test)
+            # if 100 <= step_number < 500:
+            #     if step_number % 100 == 0:
+            #         run_test(model, step_number, test_dataset, stat_holder_test)
+            # elif 500 <= step_number < 2000:
+            #     if step_number % 500 == 0:
+            #         run_test(model, step_number, test_dataset, stat_holder_test)
+            # elif 2000 <= step_number < 10000:
+            #     if step_number % 2000 == 0:
+            #         run_test(model, step_number, test_dataset, stat_holder_test)
+            # elif 10000 <= step_number < 21000:
+            #     if step_number % 3000 == 0:
+            #         run_test(model, step_number, test_dataset, stat_holder_test)
+            # elif 21000 < step_number:
+            #     if step_number % 5000 == 0:
+            #         run_test(model, step_number, test_dataset, stat_holder_test)
 
         if not train_finished:
             print('epoch #%d came to the end' % (epoch + 1))
@@ -196,7 +196,11 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
 
 
 def main():
-    train_model('vk6', model_mode=ModelMode.TRANSFORMER)
+    dirs = ['1458', '2259', '2261', '2821', '2997', '3358', '3386', '3427']
+    # dirs = ['vk%s' % (i + 1) for i in range(0, 12)]
+
+    for campaign in dirs:
+        train_model(campaign, model_mode=ModelMode.DLF)
 
 
 if __name__ == '__main__':

@@ -19,16 +19,14 @@ _LABELS_vk = ['market_price', 'bid', 'domain_hash', 'fb_index',
               'city_id', 'weekday', 'hour', 'fb_section_id', 'ads_section_id', 'ads_platform_id']
 
 
-def build_toy_dataset(dataset_path, dataset_name, size, data_mode=DataMode.ALL_DATA):
+def build_toy_dataset(dataset_path, dataset_name, size, labels, data_mode=DataMode.ALL_DATA):
     input_path = dataset_path + dataset_name
     output_path = dataset_path + 'toy_datasets_' + dataset_name
 
     df = pd.read_csv(
         input_path,
         sep='\t',
-        names=['market_price', 'bid', 'domain_hash', 'fb_index', 'user_age', 'user_sex', 'device_model', 'os',
-               'user_ip', 'country_id', 'city_id', 'weekday', 'hour', 'fb_section_id', 'ads_section_id',
-               'ads_platform_id']
+        names=labels
     )
 
     if data_mode == DataMode.WIN_ONLY:
@@ -230,10 +228,23 @@ def interval_rebuilder():
             .to_csv(new_log_path, sep='\t', index=False)
 
 
+def build_cool_start_dataset(path, campaign, labels):
+    input_path = path + campaign + '/train_all.tsv'
+    output_path = path + campaign + '/train_cool_start.tsv'
+
+    pd.read_csv(input_path, sep=SEPARATOR, names=labels) \
+        .sample(frac=0.2, replace=True, random_state=1) \
+        .to_csv(output_path, sep=SEPARATOR, header=False, index=False)
+
+
 def main():
-    interval_rebuilder()
+    dirs = ['1458', '2259', '2261', '2821', '2997', '3358', '3386', '3427', '3476']
     # dirs = ['vk%s' % (i + 1) for i in range(0, 12)]
-    # # dirs = ['1458', '2259', '2261', '2821', '2997', '3358', '3386', '3427', '3476']
+
+    for campaign in dirs:
+        print('For campaign %s' % campaign)
+        build_cool_start_dataset('../../data/', campaign, _LABELS)
+
     # dataset_info('../../data/', dirs)
 
     # SocialNetDatasetRebuilder(

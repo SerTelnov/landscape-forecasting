@@ -163,14 +163,14 @@ class BiSparseData:
             self.loseData.reshuffle()
 
 
-def _get_dataset_name(path, campaign, is_train):
-    data_name = 'all'
+def _get_dataset_name(path, campaign, is_train, is_cool_start=False):
+    data_name = 'all' if not is_cool_start else 'cool_start'
     dataset_option = 'train' if is_train else 'test'
     return '%s/%s/%s_%s.tsv' % (path, campaign, dataset_option, data_name)
 
 
-def read_dataset(path, campaign, data_mode=DataMode.ALL_DATA, is_train=True):
-    dataset_path = _get_dataset_name(path, campaign, is_train)
+def read_dataset(path, campaign, data_mode=DataMode.ALL_DATA, is_train=True, is_cool_start=False):
+    dataset_path = _get_dataset_name(path, campaign, is_train, is_cool_start)
     return BiSparseData(dataset_path, BATCH_SIZE, data_mode, is_train)
 
 
