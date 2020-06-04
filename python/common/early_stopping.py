@@ -18,7 +18,7 @@ class EarlyStopping:
 
         checkpoint_path = 'output/checkpoint/' + model_name
         if model2load is not None:
-            checkpoint_path = 'output/checkpoint/aws/' + model2load
+            checkpoint_path = 'output/checkpoint/' + model2load
 
         self.ckpt = tf.train.Checkpoint(model=model, optimizer=optimizer)
         self.ckpt_manager = tf.train.CheckpointManager(self.ckpt, checkpoint_path, max_to_keep=3)
