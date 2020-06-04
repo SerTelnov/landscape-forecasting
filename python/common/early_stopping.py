@@ -27,9 +27,8 @@ class EarlyStopping:
             self.ckpt.restore(self.ckpt_manager.latest_checkpoint)
             print('Restore model %s' % model2load)
 
-    def times_up(self, step):
-        print('All steps are finished')
-        self._save(step, np.Inf)
+    def times_up(self):
+        self._restore_best()
 
     def check(self, step, loss_score):
         if abs(self.previous - loss_score) < self.min_delta:
@@ -40,8 +39,7 @@ class EarlyStopping:
 
         if loss_score / self.best > 1.5:
             print('Overfitting!!')
-            self.ckpt.restore(self.ckpt_manager.latest_checkpoint)
-            print('Restore best result')
+            self._restore_best()
             return True
 
         if self.comp(self.best, loss_score):
@@ -52,3 +50,7 @@ class EarlyStopping:
     def _save(self, step, score):
         self.ckpt_manager.save()
         print('Saving checkpoint in step %s with ANLP %s' % (step, score))
+
+    def _restore_best(self):
+        self.ckpt.restore(self.ckpt_manager.latest_checkpoint)
+        print('Restore best result')

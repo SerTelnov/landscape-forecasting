@@ -187,12 +187,12 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
                 if step_number % 5000 == 0:
                     run_test(model, step_number, test_dataset, stat_holder_test)
 
-        if step_number + 1 >= steps:
+        if not train_finished:
             print('epoch #%d came to the end' % (epoch + 1))
-        run_test(model, step_number, test_dataset, stat_holder_test, test_all_data=True)
+            run_test(model, step_number, test_dataset, stat_holder_test, test_all_data=True)
 
-    if not train_finished:
-        early_stopping.times_up(step_number)
+    early_stopping.times_up()
+    run_test(model, step_number, test_dataset, stat_holder_test, test_all_data=True)
 
 
 def main():
