@@ -14,9 +14,13 @@ class Logger:
     _PATH_PREFIX = 'output/'
     _LABELS = ['campaign', 'category', 'step', 'cross_entropy', 'mean_anlp', 'common_loss', 'mean_auc']
 
-    def __init__(self, campaign, data_mode, loss_mode=LossMode.ALL_LOSS, model_mode=ModelMode.DLF):
+    def __init__(self, campaign, data_mode, loss_mode=LossMode.ALL_LOSS, model_mode=ModelMode.DLF, log_filename=None):
         self._campaign = campaign
-        self._log_filename = self._get_log_name(campaign, model_mode, data_mode, loss_mode)
+        if log_filename is None:
+            self._log_filename = self._get_log_name(campaign, model_mode, data_mode, loss_mode)
+        else:
+            self._log_filename = log_filename
+
         self._log_path = Logger._PATH_PREFIX + self._log_filename + '.tsv'
         self._force_write(SEPARATOR.join(Logger._LABELS))
 

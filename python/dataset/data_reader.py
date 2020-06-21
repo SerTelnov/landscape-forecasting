@@ -15,7 +15,7 @@ from python.util import (
 
 class SparseData:
 
-    def __init__(self, file_path, data_mode):
+    def __init__(self, file_path, data_mode, shuffle_data=True):
         self.features = []
         self.labels = []
         self.bids = []
@@ -35,8 +35,11 @@ class SparseData:
         self.bids = np.array(self.bids)
         self.labels = np.array(self.labels)
         self.indices = np.arange(self.size)
-        self.shuffle_indices()
         self.batch_pointer = 0
+
+        self.shuffle_data = shuffle_data
+        if self.shuffle_data:
+            self.shuffle_indices()
 
     @staticmethod
     def parse_line(line, data_mode):
@@ -60,7 +63,8 @@ class SparseData:
         self.shuffle_indices()
 
     def shuffle_indices(self):
-        np.random.shuffle(self.indices)
+        if self.shuffle_data:
+            np.random.shuffle(self.indices)
 
     def number_of_chunks(self, batch_size):
         return math.floor(len(self.features) / batch_size)
@@ -90,17 +94,19 @@ class BiSparseData:
         self.is_train = is_train
         self.data_mode = data_mode
 
+        shuffle_data = not is_train
+
         if data_mode == DataMode.ALL_DATA:
-            self.winData = SparseData(file_path, DataMode.WIN_ONLY)
-            self.loseData = SparseData(file_path, DataMode.LOSS_ONLY)
+            self.winData = SparseData(file_path, DataMode.WIN_ONLY, shuffle_data)
+            self.loseData = SparseData(file_path, DataMode.LOSS_ONLY, shuffle_data)
             self.size = self.winData.size + self.loseData.size
         elif data_mode == DataMode.WIN_ONLY:
-            self.winData = SparseData(file_path, DataMode.WIN_ONLY)
+            self.winData = SparseData(file_path, DataMode.WIN_ONLY, shuffle_data)
             self.loseData = None
             self.size = self.winData.size
         elif data_mode == DataMode.LOSS_ONLY:
             self.winData = None
-            self.loseData = SparseData(file_path, DataMode.LOSS_ONLY)
+            self.loseData = SparseData(file_path, DataMode.LOSS_ONLY, shuffle_data)
             self.size = self.loseData.size
 
     def epoch_steps(self, epoch_number=1):

@@ -6,10 +6,19 @@ from python.tlf.transformer import TransformerForecasting
 from python.util import ModelMode
 
 
-def read_checkpoint(model_name):
-    checkpoint_path = '../output/checkpoint/aws/' + model_name + '/cp-{epoch:02d}.ckpt'
-    checkpoint_dir = os.path.dirname(checkpoint_path)
-    return tf.train.latest_checkpoint(checkpoint_dir)
+def read_checkpoint(model, model_name):
+    checkpoint_path = 'output/checkpoint/' + model_name
+
+    print(checkpoint_path)
+
+    ckpt = tf.train.Checkpoint(model=model)
+    ckpt_manager = tf.train.CheckpointManager(ckpt, checkpoint_path, max_to_keep=3)
+
+    if ckpt_manager.latest_checkpoint:
+        ckpt.restore(ckpt_manager.latest_checkpoint)
+        print('Restore model %s' % model_name)
+
+    return model
 
 
 def make_model(model_mode, checkpoint_model=None, training_mode=True):
@@ -23,7 +32,6 @@ def make_model(model_mode, checkpoint_model=None, training_mode=True):
     model.build(input_shape=([-1, 16], [-1, 2]))
 
     if checkpoint_model is not None:
-        latest = read_checkpoint(checkpoint_model)
-        model.load_weights(latest)
+        model = read_checkpoint(model, checkpoint_model)
 
     return model
