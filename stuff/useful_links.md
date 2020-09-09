@@ -1,3 +1,5 @@
+## [Social network dataset download link](https://drive.google.com/file/d/16aRmeHgS3h_unHxqDpOd3gPBzZI7KQK3/view?usp=sharing)
+
 ## Полезные ссылки
 
 [Основная статья](https://arxiv.org/pdf/1905.03028.pdf)
