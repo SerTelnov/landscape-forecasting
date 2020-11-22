@@ -59,7 +59,7 @@ class KM:
             W.append(self._win_prob(bid))
             distribution.append(self._win_prob(bid + 1) - self._win_prob(bid))
 
-        return {'Плотность распределения': distribution, 'Вероятность выигрыша': W}
+        return {'Probability density': distribution, 'Winning probability': W}
 
     def metric(self, bid_log):
         win_prediction = []
@@ -100,7 +100,8 @@ class KM:
 
 
 def get_bid_log(mode, campaign):
-    path = '../data/'
+    # path = '../data/'
+    path = '../../data/'
 
     dataset_path = '%s%s/%s_all.tsv' % (path, campaign, mode)
     df = pd.read_csv(dataset_path, sep=SEPARATOR, names=_LABELS)
