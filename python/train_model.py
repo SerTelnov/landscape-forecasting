@@ -21,7 +21,7 @@ _TRAIN_STEP = 21010
 _BETA_2 = 0.99
 
 
-def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=DataMode.ALL_DATA):
+def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=DataMode.ALL_DATA, data_path='../'):
     logger = Logger(
         campaign=campaign,
         model_mode=model_mode,
@@ -37,8 +37,8 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
     # train_dataset = read_dataset('../data', 'toy_datasets', data_mode)
     # test_dataset = read_dataset('../data', 'toy_datasets', data_mode, is_train=False)
 
-    train_dataset = read_dataset('../data', str(campaign), data_mode)
-    test_dataset = read_dataset('../data', str(campaign), data_mode, is_train=False)
+    train_dataset = read_dataset(data_path + 'data', str(campaign), data_mode)
+    test_dataset = read_dataset(data_path + 'data', str(campaign), data_mode, is_train=False)
 
     model = make_model(model_mode)
     early_stopping = EarlyStopping(model, optimizer, logger.model_name)
@@ -134,11 +134,3 @@ def train_model(campaign, model_mode, loss_mode=LossMode.ALL_LOSS, data_mode=Dat
 
     early_stopping.times_up()
     run_test(model, step_number, test_dataset, stat_holder_test, test_all_data=True)
-
-
-def main():
-    train_model('vk6', model_mode=ModelMode.TRANSFORMER)
-
-
-if __name__ == '__main__':
-    main()

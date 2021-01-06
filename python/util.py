@@ -2,21 +2,21 @@ from enum import Enum
 
 
 class LossMode(Enum):
-    ALL_LOSS = 1
-    CROSS_ENTROPY = 2
-    ANLP = 3
+    ALL_LOSS = 'all'
+    CROSS_ENTROPY = 'cross_entropy'
+    ANLP = 'anlp'
 
 
 class DataMode(Enum):
-    ALL_DATA = 1
-    WIN_ONLY = 2
-    LOSS_ONLY = 3
+    ALL_DATA = 'all_data'
+    WIN_ONLY = 'win'
+    LOSS_ONLY = 'loss'
 
 
 class ModelMode(Enum):
-    DLF = 1,
-    DLF_ATTENTION = 2,
-    TRANSFORMER = 3
+    DLF = 'dlf',
+    DLF_ATTENTION = 'dlf_attention',
+    TRANSFORMER = 'tlf'
 
 
 SEPARATOR = '\t'
